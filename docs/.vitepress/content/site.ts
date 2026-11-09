@@ -1,11 +1,12 @@
 export const repository = 'https://github.com/compute-factory/compute-factory.github.io'
+export const organization = 'https://github.com/compute-factory'
+export const contactEmail = 'wsj040303@gmail.com'
 
 export const siteNav = [
   { text: '首页', link: '/', activeMatch: '^/$' },
   { text: '教学', link: '/guide/', activeMatch: '^/guide/' },
   { text: '论文阅读', link: '/#papers' },
   { text: '推荐项目', link: '/#recommended-projects' },
-  { text: '更新日志', link: '/#updates' },
 ]
 
 export const homeFeatures = [

@@ -11,7 +11,7 @@
 | /guide/first-lab.html | docs/guide/first-lab.md | Markdown 实验正文 |
 | /resources.html | docs/resources.md | 阅读资料与推荐项目 |
 
-首页的论文阅读、推荐项目、更新日志导航分别链接到首页对应锚点。当前实现范围是首页和教学总览，论文内容通过资料架进入，更新日志链接到仓库提交记录。
+首页的论文阅读和推荐项目导航链接到首页对应锚点。首页底部展示联系邮箱和组织 GitHub 页面，联系方式集中配置在 content/site.ts。
 
 ## 文件职责
 
@@ -25,15 +25,17 @@
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
 | docs/.vitepress/theme/components/RepositoryLink.vue | 桌面和手机共用的 GitHub 按钮 |
 | docs/.vitepress/theme/components/home/HomeHero.vue | Logo、站名、介绍和开始学习按钮 |
-| docs/.vitepress/theme/components/home/HomeSections.vue | 首页内容介绍、更新、贡献者和联系方式 |
-| docs/.vitepress/theme/components/learning/LearningOverview.vue | 教学页结构与章节内容 |
+| docs/.vitepress/theme/components/home/HomeSections.vue | 首页内容介绍和联系方式 |
+| docs/.vitepress/theme/components/learning/LearningOverview.vue | 教学页导航、标题和地图容器 |
 | docs/.vitepress/theme/components/learning/KnowledgeMap.vue | 可点击知识图及窄屏排列 |
 | docs/public/logo.png | 站点标志 |
 | .github/workflows/pages.yml | PR 构建检查与 main 自动发布 |
 
 ## 数据和样式约定
 
-教学页顶部导航、知识图和章节使用同一份 learningTopics，文档侧栏也从该配置生成。新增方向时，在 learning.ts 中增加一项，使用唯一且稳定的 id。知识图线条按方向数量计算，移动端转换为纵向分支。
+教学页顶部导航、知识图和文档侧栏使用同一份 learningTopics。地图目前展示五个一级分支。顶部导航定位地图节点，节点点击进入该方向 links 中的第一个阅读入口。新增方向时，在 learning.ts 中增加一项，使用唯一且稳定的 id，并提供至少一个有效 links 条目。知识图线条按方向数量计算，移动端转换为纵向分支。
+
+首页与教学页使用流式全宽布局，外边距由 --cf-page-gutter 控制。全站导航宽度通过 --vp-layout-max-width 跟随视口。地图高度由视口高度和最低可读高度共同决定。后续扩展子分支时应继续使用结构化数据驱动地图。
 
 阅读链接指向已有课程、章节锚点或官方资料。新增站内文章后，将对应 links 改为实际路径。内部链接通过 VitePress 的 withBase 处理。修改 id 时同步检查已有外链和锚点。
 
@@ -45,7 +47,7 @@
 
 使用 Node.js 24，执行 npm ci 安装锁定依赖，npm run dev 启动开发预览。修改后执行 npm run build，再用 npm run preview 检查构建结果。
 
-布局改动至少检查桌面和 375px 手机宽度，并检查 320px 窄屏、导航折叠、开始学习按钮、知识图全部节点、搜索和现有实验页。知识图链接应滚动到相应章节，页面应无横向溢出。深色主题也要检查文字和背景对比。
+布局改动至少检查桌面、2560px 大屏和 375px 手机宽度，并检查 320px 窄屏、浏览器缩放、导航折叠、开始学习按钮、知识图全部节点、搜索和现有实验页。顶部专题导航应定位对应节点，节点链接应能进入阅读入口，页面应无横向溢出。深色主题也要检查文字和背景对比。
 
 提交到 main 会触发发布。确认 GitHub Actions 成功后，再打开线上首页和教学页验证。自定义域名由仓库 Pages 设置管理。
 

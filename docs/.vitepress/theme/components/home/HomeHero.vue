@@ -9,10 +9,9 @@ import { withBase } from 'vitepress'
     </div>
 
     <div class="hero-copy">
-      <p class="hero-sign"><span aria-hidden="true"></span>前方施工 · 新手可进</p>
       <h1 id="home-title">算力工地</h1>
       <p class="hero-english cf-eyebrow">Compute Factory</p>
-      <p class="hero-description">面向新手的中文 AI Infra 教学站。沿着学习地图，从认识大模型、跑通推理，到读懂 GPU 算子和多卡训练。</p>
+      <p class="hero-description">初学者友好的 AI Infra 教学站。沿着学习地图，从认识什么是大模型，到成为一名Infra工程师</p>
     </div>
 
     <a class="cf-button hero-action" :href="withBase('/guide/')">
@@ -24,7 +23,8 @@ import { withBase } from 'vitepress'
 <style scoped>
 .home-hero {
   display: grid;
-  grid-template-columns: clamp(9rem, 18vw, 14rem) minmax(0, 1fr) auto;
+  grid-template-columns: clamp(9rem, 16vw, 20rem) minmax(0, 1fr) auto;
+  min-height: clamp(20rem, 45svh, 42rem);
   align-items: center;
   gap: clamp(1.75rem, 4vw, 3.75rem);
   padding: clamp(2rem, 4.5vw, 3.875rem);
@@ -44,31 +44,16 @@ import { withBase } from 'vitepress'
 
 .hero-logo img { width: 82%; height: auto; }
 
-.hero-sign {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--cf-gold);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
-
-.hero-sign span {
-  width: 1.2rem;
-  height: 0.55rem;
-  background: repeating-linear-gradient(125deg, var(--cf-gold) 0 2px, transparent 2px 5px);
-}
-
 .hero-copy h1 {
   margin: 0.5rem 0 0.25rem;
-  font-size: clamp(2.6rem, 5.5vw, 4.5rem);
+  font-size: clamp(2.6rem, 4.5vw, 6rem);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.12;
 }
 
 .hero-english { margin-top: 0.5rem; font-size: 0.875rem; text-transform: uppercase; }
-.hero-description { max-width: 29em; margin-top: 0.875rem; color: var(--cf-text); line-height: 1.75; }
+.hero-description { max-width: 50em; margin-top: 0.875rem; color: var(--cf-text); line-height: 1.75; }
 .hero-action { justify-self: start; }
 
 @media (max-width: 850px) {

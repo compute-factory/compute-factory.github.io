@@ -31,6 +31,6 @@ export default defineConfig({
     returnToTopLabel: '回到顶部',
     sidebarMenuLabel: '课程目录',
     darkModeSwitchLabel: '切换配色',
-    footer: { message: '前方施工 · 新手可进', copyright: '算力工地 · Compute Factory' },
+    footer: { copyright: '算力工地 · Compute Factory' },
   },
 })

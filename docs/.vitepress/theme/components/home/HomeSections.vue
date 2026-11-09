@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
-import { homeFeatures, repository } from '../../../content/site'
+import { homeFeatures, organization, contactEmail } from '../../../content/site'
 </script>
 
 <template>
@@ -18,20 +18,13 @@ import { homeFeatures, repository } from '../../../content/site'
     </div>
 
     <div class="site-meta">
-      <section id="updates" class="cf-anchor">
-        <h2>更新日志</h2>
-        <p>查看教程、实验和站点的更新记录。</p>
-        <a :href="repository + '/commits/main/'">GitHub 提交记录 <span aria-hidden="true">↗</span></a>
+      <section>
+        <h2>联系我们</h2>
+        <a :href="'mailto:' + contactEmail">{{ contactEmail }}</a>
       </section>
       <section>
-        <h2>制作名单</h2>
-        <p>算力工地由项目维护者和贡献者共同建设。</p>
-        <a :href="repository + '/graphs/contributors'">查看贡献者 <span aria-hidden="true">↗</span></a>
-      </section>
-      <section>
-        <h2>联系方式</h2>
-        <p>欢迎提交勘误、建议教程选题或推荐项目。</p>
-        <a :href="repository + '/issues'">在 GitHub 提 Issue <span aria-hidden="true">↗</span></a>
+        <h2>GitHub</h2>
+        <a :href="organization">compute-factory <span aria-hidden="true">↗</span></a>
       </section>
     </div>
   </section>
@@ -41,8 +34,7 @@ import { homeFeatures, repository } from '../../../content/site'
 .home-sections { padding-block: 2.75rem 3.25rem; }
 .home-sections > h2 { margin-top: 0.35rem; font-size: clamp(1.65rem, 3vw, 2.15rem); font-weight: 750; }
 
-.feature-grid,
-.site-meta {
+.feature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
@@ -69,11 +61,11 @@ import { homeFeatures, repository } from '../../../content/site'
 .home-sections a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .feature a { margin-top: auto; padding-top: 0.2rem; }
 
-.site-meta { gap: 1.5rem; margin-top: 2.25rem; padding-top: 1.5rem; border-top: 1px solid var(--cf-border); }
+.site-meta { display: flex; flex-wrap: wrap; gap: 1.5rem 4rem; margin-top: 2.25rem; padding-top: 1.5rem; border-top: 1px solid var(--cf-border); }
 .site-meta h2 { font-size: 1.05rem; font-weight: 700; }
-.site-meta p { margin: 0.3rem 0 0.45rem; font-size: 0.9rem; }
+.site-meta a { display: inline-block; margin-top: 0.5rem; overflow-wrap: anywhere; }
 
 @media (max-width: 720px) {
-  .feature-grid, .site-meta { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
 }
 </style>
