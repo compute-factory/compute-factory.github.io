@@ -20,6 +20,7 @@
 | docs/.vitepress/config.mts | VitePress 配置、文档侧栏、搜索与页面元信息 |
 | docs/.vitepress/content/site.ts | 顶部导航、首页板块文案、仓库地址 |
 | docs/.vitepress/content/learning.ts | 教学方向、稳定锚点、知识点和阅读入口 |
+| docs/.vitepress/content/curriculum.ts | 知识图二级主题和三级知识点，修改课程规划优先编辑这里 |
 | docs/.vitepress/theme/index.ts | 主题注册与全局 CSS 入口 |
 | docs/.vitepress/theme/WorksiteLayout.vue | 扩展默认布局的导航插槽 |
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
@@ -33,9 +34,13 @@
 
 ## 数据和样式约定
 
-教学页顶部导航、知识图和文档侧栏使用同一份 learningTopics。地图目前展示五个一级分支。顶部导航定位地图节点，节点点击进入该方向 links 中的第一个阅读入口。新增方向时，在 learning.ts 中增加一项，使用唯一且稳定的 id，并提供至少一个有效 links 条目。知识图线条按方向数量计算，移动端转换为纵向分支。
+教学页顶部导航、知识图和文档侧栏使用同一份 learningTopics。地图展示五个一级分支，每条分支从 curriculum.ts 读取二级主题和三级知识点。二级主题使用原生 details/summary 折叠，默认显示二级标题，点击后展开知识点。三级文字表达课程规划，阅读入口独立链接到已有文章或官方资料。
 
-首页与教学页使用流式全宽布局，外边距由 --cf-page-gutter 控制。全站导航宽度通过 --vp-layout-max-width 跟随视口。地图高度由视口高度和最低可读高度共同决定。后续扩展子分支时应继续使用结构化数据驱动地图。
+修改知识图时，找到 curriculum 中与 learning.ts 的 id 相同的键。调整数组顺序可调整学习顺序，修改 title 可改二级标题，修改 items 可增删三级知识点。新增一级方向时，同时增加 learningTopics 和 curriculum 的对应条目。每个一级方向至少提供一个有效 links 条目，同一分支内的模块标题应唯一。
+
+连线由 CSS 根据内容高度绘制，展开节点后自动适配。桌面上每条分支由主节点和多列二级节点组成，窄屏改为纵向排列。无需维护像素坐标。
+
+首页与教学页使用流式全宽布局，外边距由 --cf-page-gutter 控制。全站导航宽度通过 --vp-layout-max-width 跟随视口。地图高度随展开的内容增长，后续扩展继续使用结构化数据驱动地图。
 
 首页首屏是全宽布局中的独立区块。在 1440px 及以上视口下使用 70vw 并水平居中，小屏使用可用内容宽度。「开始学习」按钮的字号、内边距和高度随视口适配，相关规则位于 HomeHero.vue。
 

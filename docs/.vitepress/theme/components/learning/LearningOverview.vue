@@ -11,7 +11,7 @@ import KnowledgeMap from './KnowledgeMap.vue'
     <header class="learning-header">
       <p class="cf-eyebrow">LEARNING MAP / 主题教程</p>
       <h1>AI Infra 学习地图</h1>
-      <p>从五个方向开始，逐步展开你的知识地图。</p>
+      <p>沿五个方向探索 AI Infra。点击二级节点展开知识点；这份地图是教程规划，阅读入口通往已有实验或官方资料。</p>
     </header>
     <KnowledgeMap />
   </div>

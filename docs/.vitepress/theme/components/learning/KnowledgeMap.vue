@@ -1,28 +1,27 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
 import { learningTopics } from '../../../content/learning'
-
-const rowHeight = 100
-const height = learningTopics.length * rowHeight
-
-function branchPath(index: number) {
-  return `M 0 ${height / 2} C 65 ${height / 2}, 55 ${index * rowHeight + rowHeight / 2}, 120 ${index * rowHeight + rowHeight / 2}`
-}
+import { curriculum } from '../../../content/curriculum'
 </script>
 
 <template>
   <div class="knowledge-map" aria-label="AI Infra 教学知识图">
-    <div class="map-root"><span>AI Infra</span><small>学习地图</small></div>
-    <svg class="map-branches" :viewBox="'0 0 120 ' + height" preserveAspectRatio="none" aria-hidden="true">
-      <path v-for="(topic, index) in learningTopics" :key="topic.id" :d="branchPath(index)" />
-    </svg>
+    <div class="map-root"><strong>AI Infra</strong><small>学习地图</small></div>
     <ul class="map-topics">
-      <li v-for="(topic, index) in learningTopics" :key="topic.id">
-        <a :id="topic.id" class="topic-node cf-anchor" :href="withBase(topic.links[0].href)" :aria-label="topic.title + '：' + topic.summary">
-          <span class="node-number">0{{ index + 1 }}</span>
-          <strong>{{ topic.title }}</strong>
-          <span class="node-arrow" aria-hidden="true">↗</span>
-        </a>
+      <li v-for="(topic, index) in learningTopics" :id="topic.id" :key="topic.id" class="map-branch cf-anchor">
+        <div class="branch-heading">
+          <span class="cf-eyebrow">0{{ index + 1 }}</span>
+          <h2>{{ topic.title }}</h2>
+          <a :href="withBase(topic.links[0].href)">阅读入口 <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="module-list">
+          <details v-for="module in curriculum[topic.id]" :key="module.title" class="map-module">
+            <summary>{{ module.title }}<span aria-hidden="true">+</span></summary>
+            <ul>
+              <li v-for="item in module.items" :key="item">{{ item }}</li>
+            </ul>
+          </details>
+        </div>
       </li>
     </ul>
   </div>
@@ -30,11 +29,10 @@ function branchPath(index: number) {
 
 <style scoped>
 .knowledge-map {
-  --map-height: max(34rem, calc(100svh - 19rem));
   display: grid;
-  grid-template-columns: minmax(7rem, 15%) minmax(4rem, 33%) minmax(0, 1fr);
+  grid-template-columns: clamp(7rem, 12vw, 14rem) minmax(0, 1fr);
   align-items: center;
-  height: var(--map-height);
+  gap: clamp(1.5rem, 4vw, 5rem);
   padding: clamp(1rem, 3vw, 3rem);
   border: 1px solid var(--cf-border);
   border-radius: 1rem;
@@ -43,42 +41,56 @@ function branchPath(index: number) {
   background-size: 20px 20px;
 }
 .map-root {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   aspect-ratio: 1;
   border: 2px solid var(--cf-amber);
   border-radius: 50%;
   background: var(--cf-surface);
 }
-.map-root span { font-size: clamp(1.1rem, 2.2vw, 2.5rem); font-weight: 750; }
-.map-root small { margin-top: 0.35rem; color: var(--cf-muted); font-size: 0.8125rem; }
-.map-branches { width: 100%; height: 100%; min-height: 0; min-width: 0; align-self: stretch; overflow: visible; }
-.map-branches path { fill: none; stroke: var(--cf-amber); stroke-width: 2; vector-effect: non-scaling-stroke; }
-.map-topics { display: grid; grid-auto-rows: 1fr; align-self: stretch; margin: 0; padding: 0; list-style: none; }
-.map-topics li { display: flex; align-items: center; min-height: 5.5rem; }
-.topic-node {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: min(100%, 25rem);
-  min-height: 4rem;
-  padding: 1rem clamp(0.75rem, 2vw, 2rem);
-  border: 1px solid var(--cf-border);
-  border-radius: 0.75rem;
-  background: var(--cf-surface);
+.map-root::after { content: ''; position: absolute; left: 100%; width: clamp(1.5rem, 4vw, 5rem); top: 50%; border-top: 2px solid var(--cf-amber); }
+.map-root strong { font-size: clamp(1.1rem, 2vw, 2rem); }
+.map-root small { color: var(--cf-muted); margin-top: 0.35rem; }
+.map-topics { margin: 0; padding: 0; list-style: none; }
+.map-branch { position: relative; display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.5rem; padding: 1.25rem 0 1.25rem 2rem; }
+.map-branch::before { content: ''; position: absolute; left: 0; top: 50%; width: 2rem; border-top: 2px solid var(--cf-amber); }
+.map-branch::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; border-left: 2px solid var(--cf-amber); }
+.map-branch:first-child::after { top: 50%; }
+.map-branch:last-child::after { bottom: 50%; }
+.branch-heading { position: relative; align-self: center; padding: 1rem; background: var(--cf-surface); border: 1px solid var(--cf-border); border-radius: 0.75rem; }
+.branch-heading::after { content: ''; position: absolute; left: 100%; top: 50%; width: 1.5rem; border-top: 2px solid var(--cf-amber); }
+.branch-heading h2 { margin-block: 0.3rem 0.65rem; font-size: 1.125rem; font-weight: 700; }
+.branch-heading a { color: var(--cf-gold); font-size: 0.8125rem; }
+.branch-heading a:hover { text-decoration: underline; }
+.map-branch:target .branch-heading { border-color: var(--cf-gold); }
+.module-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 0.75rem; }
+.map-module { min-width: 0; background: var(--cf-surface); border: 1px solid var(--cf-border); border-radius: 0.5rem; }
+.map-module summary { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; min-height: 3.25rem; padding: 0.75rem; cursor: pointer; list-style: none; font-weight: 600; }
+.map-module summary::-webkit-details-marker { display: none; }
+.map-module summary span { color: var(--cf-gold); flex-shrink: 0; }
+.map-module[open] summary { border-bottom: 1px solid var(--cf-border); }
+.map-module[open] summary span { transform: rotate(45deg); }
+.map-module ul { padding: 0.5rem 0.85rem 0.75rem 1.75rem; list-style: disc; }
+.map-module li { padding-block: 0.3rem; color: var(--cf-text); font-size: 0.875rem; line-height: 1.7; overflow-wrap: anywhere; }
+.map-module summary:focus-visible { outline: 2px solid var(--cf-gold); outline-offset: 3px; }
+@media (max-width: 1200px) {
+  .module-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.topic-node:hover, .topic-node:focus-visible, .topic-node:target { border-color: var(--cf-gold); background: var(--cf-warm); }
-.topic-node strong { font-size: clamp(1rem, 1.25vw, 1.5rem); }
-.node-number { color: var(--cf-gold); font-family: var(--vp-font-family-mono); font-size: 0.8125rem; }
-.node-arrow { margin-left: auto; color: var(--cf-gold); }
-@media (max-width: 560px) {
-  .knowledge-map { grid-template-columns: 1fr; gap: 1rem; height: auto; min-height: 34rem; }
-  .map-root { width: 6rem; }
-  .map-branches { display: none; }
-  .map-topics { margin-left: 1rem; padding-left: 1rem; border-left: 2px solid var(--cf-amber); }
-  .map-topics li { position: relative; }
-  .map-topics li::before { content: ''; position: absolute; top: 50%; left: -1rem; width: 1rem; border-top: 2px solid var(--cf-amber); }
+@media (max-width: 850px) {
+  .knowledge-map { grid-template-columns: 1fr; gap: 0.5rem; }
+  .map-root { width: 7rem; }
+  .map-root::after { display: none; }
+  .map-branch { grid-template-columns: 1fr; padding-left: 1rem; gap: 0.75rem; }
+  .map-branch::before { width: 1rem; top: 3.5rem; }
+  .map-branch:first-child::after { top: 3.5rem; }
+  .map-branch:last-child::after { bottom: auto; height: 3.5rem; }
+  .branch-heading { width: fit-content; }
+  .branch-heading::after { display: none; }
+}
+@media (max-width: 480px) {
+  .module-list { grid-template-columns: 1fr; }
 }
 </style>
