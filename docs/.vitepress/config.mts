@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
-
-const repository = 'https://github.com/compute-factory/compute-factory.github.io'
+import { learningTopics } from './content/learning'
+import { repository, siteNav } from './content/site'
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -9,23 +9,22 @@ export default defineConfig({
   head: [['link', { rel: 'icon', type: 'image/png', href: '/logo.png' }]],
   themeConfig: {
     logo: { src: '/logo.png', alt: '戴安全帽的芯片' },
-    nav: [
-      { text: '学习路线', link: '/guide/' },
-      { text: '动手实验', link: '/guide/first-lab' },
-      { text: '资料架', link: '/resources' },
-    ],
+    nav: siteNav,
     sidebar: [
       {
         text: '新手开工',
         items: [
-          { text: '学习路线', link: '/guide/' },
+          { text: '教学总览', link: '/guide/' },
           { text: '第一张工单', link: '/guide/first-lab' },
         ],
+      },
+      {
+        text: '教学专题',
+        items: learningTopics.map(({ id, title }) => ({ text: title, link: '/guide/#' + id })),
       },
       { text: '延伸阅读', items: [{ text: '资料架', link: '/resources' }] },
     ],
     search: { provider: 'local' },
-    socialLinks: [{ icon: 'github', link: repository }],
     editLink: { pattern: `${repository}/edit/main/docs/:path`, text: '在 GitHub 上编辑此页' },
     outline: { label: '本页目录' },
     docFooter: { prev: '上一页', next: '下一页' },

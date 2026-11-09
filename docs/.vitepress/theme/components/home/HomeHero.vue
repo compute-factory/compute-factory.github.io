@@ -1,0 +1,85 @@
+<script setup lang="ts">
+import { withBase } from 'vitepress'
+</script>
+
+<template>
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="hero-logo">
+      <img :src="withBase('/logo.png')" width="1024" height="1024" alt="戴安全帽的芯片">
+    </div>
+
+    <div class="hero-copy">
+      <p class="hero-sign"><span aria-hidden="true"></span>前方施工 · 新手可进</p>
+      <h1 id="home-title">算力工地</h1>
+      <p class="hero-english cf-eyebrow">Compute Factory</p>
+      <p class="hero-description">面向新手的中文 AI Infra 教学站。沿着学习地图，从认识大模型、跑通推理，到读懂 GPU 算子和多卡训练。</p>
+    </div>
+
+    <a class="cf-button hero-action" :href="withBase('/guide/')">
+      开始学习 <span aria-hidden="true">→</span>
+    </a>
+  </section>
+</template>
+
+<style scoped>
+.home-hero {
+  display: grid;
+  grid-template-columns: clamp(9rem, 18vw, 14rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1.75rem, 4vw, 3.75rem);
+  padding: clamp(2rem, 4.5vw, 3.875rem);
+  margin-block: clamp(1.75rem, 4.5vw, 3.75rem) 0;
+  border: 1px solid var(--cf-border);
+  border-radius: 1.25rem;
+  background: var(--cf-soft);
+}
+
+.hero-logo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background-image: radial-gradient(var(--cf-grid) 1px, transparent 1px);
+  background-size: 11px 11px;
+}
+
+.hero-logo img { width: 82%; height: auto; }
+
+.hero-sign {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--cf-gold);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.hero-sign span {
+  width: 1.2rem;
+  height: 0.55rem;
+  background: repeating-linear-gradient(125deg, var(--cf-gold) 0 2px, transparent 2px 5px);
+}
+
+.hero-copy h1 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: clamp(2.6rem, 5.5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+
+.hero-english { margin-top: 0.5rem; font-size: 0.875rem; text-transform: uppercase; }
+.hero-description { max-width: 29em; margin-top: 0.875rem; color: var(--cf-text); line-height: 1.75; }
+.hero-action { justify-self: start; }
+
+@media (max-width: 850px) {
+  .home-hero { grid-template-columns: minmax(5.5rem, 9rem) minmax(0, 1fr); }
+  .hero-action { grid-column: 2; }
+}
+
+@media (max-width: 510px) {
+  .home-hero { grid-template-columns: 1fr; gap: 1.2rem; padding: 1.5rem; }
+  .hero-logo { width: 6rem; }
+  .hero-logo img { width: 100%; }
+  .hero-action { grid-column: 1; }
+}
+</style>
