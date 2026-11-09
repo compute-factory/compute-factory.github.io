@@ -54,7 +54,20 @@ import { withBase } from 'vitepress'
 
 .hero-english { margin-top: 0.5rem; font-size: 0.875rem; text-transform: uppercase; }
 .hero-description { max-width: 50em; margin-top: 0.875rem; color: var(--cf-text); line-height: 1.75; }
-.hero-action { justify-self: start; }
+.hero-action {
+  justify-self: start;
+  min-height: clamp(3.5rem, 4.4vw, 5rem);
+  padding: 0.9rem clamp(1.5rem, 2vw, 3rem);
+  font-size: clamp(1.125rem, 1.2vw, 1.75rem);
+}
+
+@media (min-width: 1440px) {
+  .home-hero {
+    width: 70vw;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+}
 
 @media (max-width: 850px) {
   .home-hero { grid-template-columns: minmax(5.5rem, 9rem) minmax(0, 1fr); }
