@@ -11,7 +11,7 @@
 | /guide/first-lab.html | docs/guide/first-lab.md | Markdown 实验正文 |
 | /resources.html | docs/resources.md | 阅读资料与推荐项目 |
 
-首页的论文阅读和推荐项目导航链接到首页对应锚点。首页底部展示联系邮箱和组织 GitHub 页面，联系方式集中配置在 content/site.ts。
+首页的论文阅读和推荐项目导航链接到首页对应锚点。「如何开始」的三个入口为主题教程、论文阅读、推荐项目。联系方式集中配置在 content/site.ts，由 config.mts 注入默认主题页脚，和站点署名一起以小字显示。
 
 ## 文件职责
 
@@ -25,7 +25,7 @@
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
 | docs/.vitepress/theme/components/RepositoryLink.vue | 桌面和手机共用的 GitHub 按钮 |
 | docs/.vitepress/theme/components/home/HomeHero.vue | Logo、站名、介绍和开始学习按钮 |
-| docs/.vitepress/theme/components/home/HomeSections.vue | 首页内容介绍和联系方式 |
+| docs/.vitepress/theme/components/home/HomeSections.vue | 「如何开始」标题及三个板块入口 |
 | docs/.vitepress/theme/components/learning/LearningOverview.vue | 教学页导航、标题和地图容器 |
 | docs/.vitepress/theme/components/learning/KnowledgeMap.vue | 可点击知识图及窄屏排列 |
 | docs/public/logo.png | 站点标志 |
@@ -42,6 +42,8 @@
 页面排版使用组件内的 scoped CSS。全站颜色、字体和间距基准放在 worksite.css，颜色通过 --cf-* 变量访问，并为深色模式提供对应值。Inter 使用 VitePress 自带字体；中文和等宽字体使用系统字体回退。
 
 首页与教学总览使用 layout: page，普通文章继续使用默认文档布局。新增页面应明确属于哪种布局，避免将文章排版规则覆盖到自定义页面。
+
+桌面导航在 1101px 及以上采用居中展开的菜单和随视口放大的字号。样式集中在 worksite.css，通过默认主题类名覆盖布局；升级 VitePress 时需复核这些选择器。小屏继续使用默认折叠菜单。
 
 ## 本地开发和验证
 

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
-import { homeFeatures, organization, contactEmail } from '../../../content/site'
+import { homeFeatures } from '../../../content/site'
 </script>
 
 <template>
   <section class="home-sections" aria-labelledby="site-content">
-    <p class="cf-eyebrow">开工指南</p>
-    <h2 id="site-content">在工地学什么</h2>
+    <h2 id="site-content">如何开始</h2>
 
     <div class="feature-grid">
       <section v-for="feature in homeFeatures" :id="feature.id" :key="feature.id" class="feature cf-anchor">
@@ -17,16 +16,6 @@ import { homeFeatures, organization, contactEmail } from '../../../content/site'
       </section>
     </div>
 
-    <div class="site-meta">
-      <section>
-        <h2>联系我们</h2>
-        <a :href="'mailto:' + contactEmail">{{ contactEmail }}</a>
-      </section>
-      <section>
-        <h2>GitHub</h2>
-        <a :href="organization">compute-factory <span aria-hidden="true">↗</span></a>
-      </section>
-    </div>
   </section>
 </template>
 
@@ -55,15 +44,12 @@ import { homeFeatures, organization, contactEmail } from '../../../content/site'
 .feature:target { border-color: var(--cf-gold); background: var(--cf-soft); }
 .feature-number { padding: 0.125rem 0.45rem; border-radius: 4px; background: var(--cf-warm); }
 .feature h3 { font-size: 1.2rem; font-weight: 700; }
-.feature p:not(.feature-number), .site-meta p { color: var(--cf-text); line-height: 1.7; }
+.feature p:not(.feature-number) { color: var(--cf-text); line-height: 1.7; }
 
 .home-sections a { color: var(--cf-gold); font-weight: 650; }
 .home-sections a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .feature a { margin-top: auto; padding-top: 0.2rem; }
 
-.site-meta { display: flex; flex-wrap: wrap; gap: 1.5rem 4rem; margin-top: 2.25rem; padding-top: 1.5rem; border-top: 1px solid var(--cf-border); }
-.site-meta h2 { font-size: 1.05rem; font-weight: 700; }
-.site-meta a { display: inline-block; margin-top: 0.5rem; overflow-wrap: anywhere; }
 
 @media (max-width: 720px) {
   .feature-grid { grid-template-columns: 1fr; }

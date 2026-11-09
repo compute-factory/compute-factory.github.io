@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { learningTopics } from './content/learning'
-import { repository, siteNav } from './content/site'
+import { repository, organization, contactEmail, siteNav } from './content/site'
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -14,12 +14,12 @@ export default defineConfig({
       {
         text: '新手开工',
         items: [
-          { text: '教学总览', link: '/guide/' },
+          { text: '主题教程总览', link: '/guide/' },
           { text: '第一张工单', link: '/guide/first-lab' },
         ],
       },
       {
-        text: '教学专题',
+        text: '主题教程',
         items: learningTopics.map(({ id, title }) => ({ text: title, link: '/guide/#' + id })),
       },
       { text: '延伸阅读', items: [{ text: '资料架', link: '/resources' }] },
@@ -31,6 +31,9 @@ export default defineConfig({
     returnToTopLabel: '回到顶部',
     sidebarMenuLabel: '课程目录',
     darkModeSwitchLabel: '切换配色',
-    footer: { copyright: '算力工地 · Compute Factory' },
+    footer: {
+      message: `<a href="mailto:${contactEmail}">联系我们 · ${contactEmail}</a><a href="${organization}">GitHub · compute-factory</a>`,
+      copyright: '算力工地 · Compute Factory',
+    },
   },
 })
