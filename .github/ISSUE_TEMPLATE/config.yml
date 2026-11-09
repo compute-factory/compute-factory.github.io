@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 先看看网站
+    url: https://www.compute-factory.com/
+    about: 学习路线、动手实验和资料架都在站上，也许答案已经在里面了。
+  - name: 不知道怎么提问
+    url: https://www.compute-factory.com/guide/
+    about: 先读一遍学习路线，能帮你把问题问得更具体。

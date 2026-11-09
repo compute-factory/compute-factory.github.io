@@ -1,0 +1,50 @@
+name: 链接失效
+description: 资料架或正文里的链接打不开了
+title: "[链接] "
+labels: ["链接失效"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: 在哪个页面发现的
+      placeholder: https://www.compute-factory.com/resources.html
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: 打不开的链接
+      placeholder: https://...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: symptom
+    attributes:
+      label: 打不开的表现
+      options:
+        - 404 / 页面不存在
+        - 需要登录或已付费
+        - 跳到不相关的内容（域名被接管）
+        - 打开了但内容明显过时（针对旧版本 API）
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: replacement
+    attributes:
+      label: 有可替代的资料吗
+      description: 有就附上；没有写"无"。资料架上的替代品最好还是原始出处
+      placeholder: |
+        官网已迁到 https://...
+        或：无
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我用浏览器直接访问过，不是网络问题
+          required: true

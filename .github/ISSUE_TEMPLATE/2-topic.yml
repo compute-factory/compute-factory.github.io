@@ -1,0 +1,63 @@
+name: 选题建议
+description: 想在这里看到某篇教程
+title: "[选题] "
+labels: ["选题"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        写教程之前先开这个 Issue，确认选题不重复、位置合适，再动笔。
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 读者读完能做什么
+      description: 一句话，用动词开头。不要说"了解 XX"，要说"能用 XX 算出 YY"
+      placeholder: 例：能算出 70B 模型在 bf16 下做推理需要几张 A100
+    validations:
+      required: true
+
+  - type: textarea
+    id: stuck
+    attributes:
+      label: 你现在卡在哪
+      description: 说具体点，这是判断这个选题值不值得写的最好依据
+      placeholder: 例：知道要除以 2 因为 bf16，但不知道 KV cache 该按什么算，最后和实测差了 3 倍
+    validations:
+      required: true
+
+  - type: textarea
+    id: refs
+    attributes:
+      label: 已经找到的资料
+      description: 附原始链接，不要二手博客
+      placeholder: |
+        - https://...（官方文档）
+        - https://arxiv.org/abs/...（论文）
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: 建议放在哪个阶段
+      options:
+        - 入门：原理和估算
+        - 进阶：推理服务与性能
+        - 深入：算子、编译与分布式训练
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: 这个实验需要什么硬件
+      description: 如果有可复现的最小配置，写在这里。纯纸笔推导就写"不需要 GPU"
+      placeholder: 例：一张 24GB 显卡即可，或"纯公式推导，不需要 GPU"
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我看过学习路线，这个选题不在现有页面里
+          required: true

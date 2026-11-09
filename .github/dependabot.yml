@@ -1,0 +1,28 @@
+version: 2
+
+updates:
+  # ── 第 1 组：npm 依赖（vitepress 以及它带进来的 170 多个包）──────────
+  - package-ecosystem: "npm"
+    directory: "/"                 # package.json 在仓库根目录
+    schedule:
+      interval: "monthly"          # 默认是 weekly，改成每月一次，少被打扰
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 3    # 同时最多挂 3 个 PR，防止刷屏
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]            # 所有 npm 包合成一个 PR
+        update-types: ["minor", "patch"]
+    ignore:
+      # vitepress 跨大版本（1.x → 2.x）可能改配置格式，必须人工看
+      - dependency-name: "vitepress"
+        update-types: ["version-update:semver-major"]
+
+  # ── 第 2 组：GitHub Actions（workflow 里写的 actions/checkout@v5 这类）──
+  - package-ecosystem: "github-actions"
+    directory: "/"                 # 默认扫 .github/workflows/*.yml
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Shanghai"
+    groups:
+      actions-all:
+        patterns: ["*"]            # 四个 action 合成一个 PR

@@ -1,0 +1,56 @@
+name: 勘误 · 内容有错
+description: 教程里的说法、代码或结果不对
+title: "[勘误] "
+labels: ["勘误"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        谢谢指出问题。如果只是错别字或明显的笔误，可以直接提 PR，不用开 Issue。
+
+  - type: input
+    id: page
+    attributes:
+      label: 出问题的页面
+      description: 粘贴站上对应页面的地址
+      placeholder: https://www.compute-factory.com/guide/first-lab.html
+    validations:
+      required: true
+
+  - type: textarea
+    id: quote
+    attributes:
+      label: 哪里不对
+      description: 摘一句原文，或者贴一小段代码
+      placeholder: |
+        原文："fp16 的 Llama-7B 权重约占用 14GB 显存"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你认为正确的说法
+      description: 有出处的话一并附上（论文、官方文档、你自己的实测）
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: 环境和实测输出（涉及代码时填）
+      description: 没有就写"不涉及"，不要留空
+      placeholder: |
+        系统：Ubuntu 22.04
+        Python：3.12
+        GPU：RTX 4090 24GB / 驱动 550 / CUDA 12.4
+        实际输出：
+        ...（粘贴终端输出）
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我搜索过已有的 Issue，没有重复
+          required: true
