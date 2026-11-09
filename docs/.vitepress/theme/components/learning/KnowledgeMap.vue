@@ -2,278 +2,178 @@
 import { withBase } from 'vitepress'
 import { learningTopics } from '../../../content/learning'
 import { curriculum } from '../../../content/curriculum'
-
-// SVG coordinate space: one row per topic
-const ROW = 130
-const svgH = learningTopics.length * ROW
-const centerY = svgH / 2
-
-function branchPath(index: number): string {
-  const ty = index * ROW + ROW / 2
-  return `M 0 ${centerY} C 55 ${centerY}, 45 ${ty}, 100 ${ty}`
-}
 </script>
 
 <template>
   <div class="km" aria-label="AI Infra 教学知识图">
+    <!-- L0: root -->
+    <div class="km-root"><strong>AI Infra</strong><small>学习地图</small></div>
 
-    <!-- ① Hub -->
-    <div class="km-hub" role="img" aria-label="中心节点：AI Infra 学习地图">
-      <div class="hub-outer">
-        <div class="hub-inner">
-          <span class="hub-title">AI Infra</span>
-          <small class="hub-sub">学习地图</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- ② Animated bezier branches -->
-    <svg class="km-svg"
-         :viewBox="`0 0 100 ${svgH}`"
-         preserveAspectRatio="none"
-         aria-hidden="true">
-      <g v-for="(topic, i) in learningTopics" :key="topic.id">
-        <path :d="branchPath(i)" class="branch" :style="`--i:${i}`" />
-        <circle cx="100" :cy="i * ROW + ROW / 2" r="5"
-                class="branch-dot" :style="`--i:${i}`" />
-      </g>
-    </svg>
-
-    <!-- ③ Topic cards -->
-    <ul class="km-cards">
-      <li v-for="(topic, i) in learningTopics" :key="topic.id" class="km-row">
-        <div :id="topic.id" class="card cf-anchor">
-          <div class="card-head">
-            <span class="card-num">0{{ i + 1 }}</span>
-            <strong class="card-name">{{ topic.title }}</strong>
-            <a :href="withBase(topic.links[0].href)"
-               class="card-link"
-               :aria-label="`${topic.title} · ${topic.links[0].text}`">
-              阅读入口&nbsp;<span aria-hidden="true">↗</span>
-            </a>
-          </div>
-          <ul class="chips" aria-label="子主题列表">
-            <li v-for="mod in curriculum[topic.id]"
-                :key="mod.title"
-                class="chip">{{ mod.title }}</li>
+    <!-- L1: 方向 → L2: 模块 → L3: 知识点 -->
+    <ul class="km-branches">
+      <li v-for="(topic, index) in learningTopics" :id="topic.id" :key="topic.id" class="km-branch cf-anchor">
+        <div class="km-topic">
+          <span class="cf-eyebrow">0{{ index + 1 }}</span>
+          <h2>{{ topic.title }}</h2>
+          <ul class="km-links">
+            <li v-for="link in topic.links" :key="link.href">
+              <a :href="withBase(link.href)">{{ link.text }} <span aria-hidden="true">↗</span></a>
+            </li>
           </ul>
         </div>
+
+        <ul class="km-modules">
+          <li v-for="mod in curriculum[topic.id]" :key="mod.title" class="km-module">
+            <strong class="km-module-name">{{ mod.title }}</strong>
+            <ul class="km-leaves">
+              <li v-for="item in mod.items" :key="item">{{ item }}</li>
+            </ul>
+          </li>
+        </ul>
       </li>
     </ul>
-
   </div>
 </template>
 
 <style scoped>
-/* ── Layout grid ─────────────────────────────────────── */
+/*
+ * Connectors are pure CSS (pseudo-elements), so the tree stays aligned however
+ * tall a row grows. --km-line / --km-gap drive every elbow in the map.
+ */
 .km {
+  --km-line: 2px solid var(--cf-amber);
+  --km-gap: clamp(1.25rem, 3vw, 3rem);
   display: grid;
-  grid-template-columns: minmax(80px, 13%) minmax(32px, 18%) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  min-height: max(30rem, calc(100svh - 22rem));
-  padding: clamp(1.25rem, 3vw, 2.5rem);
+  column-gap: var(--km-gap);
+  padding: clamp(1rem, 3vw, 3rem);
   border: 1px solid var(--cf-border);
   border-radius: 1rem;
   background-color: var(--cf-soft);
   background-image: radial-gradient(var(--cf-grid) 1px, transparent 1px);
   background-size: 20px 20px;
-  gap: 0 0.25rem;
 }
 
-/* ── Hub ─────────────────────────────────────────────── */
-.km-hub { display: flex; justify-content: center; align-items: center; }
-
-.hub-outer {
+/* ── L0 root ─────────────────────────────────────────── */
+.km-root {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: clamp(76px, 11vw, 128px);
+  width: clamp(6.5rem, 11vw, 11rem);
   aspect-ratio: 1;
   border: 2px solid var(--cf-amber);
   border-radius: 50%;
   background: var(--cf-surface);
-  box-shadow:
-    0 0 0 6px color-mix(in srgb, var(--cf-amber) 18%, transparent),
-    inset 0 0 28px color-mix(in srgb, var(--cf-amber) 10%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--cf-amber) 20%, transparent);
 }
+.km-root::after { content: ''; position: absolute; left: 100%; top: 50%; width: var(--km-gap); border-top: var(--km-line); }
+.km-root strong { font-size: clamp(1.05rem, 1.8vw, 1.75rem); font-weight: 800; letter-spacing: -0.02em; color: var(--cf-ink); }
+.km-root small { margin-top: 0.3rem; color: var(--cf-muted); }
 
-.hub-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15em;
-  text-align: center;
-  padding: 0.5em;
-}
-
-.hub-title {
-  font-size: clamp(0.7rem, 1.3vw, 1rem);
-  font-weight: 800;
-  color: var(--cf-ink);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.hub-sub {
-  font-size: 0.65rem;
-  color: var(--cf-muted);
-  letter-spacing: 0.02em;
-}
-
-/* ── SVG branches ────────────────────────────────────── */
-.km-svg { width: 100%; align-self: stretch; overflow: visible; }
-
-.branch {
-  fill: none;
-  stroke: var(--cf-amber);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  animation: draw-in 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: calc(0.1s + var(--i) * 0.07s);
-}
-
-.branch-dot {
-  fill: var(--cf-amber);
-  opacity: 0;
-  animation: pop-in 0.2s ease forwards;
-  animation-delay: calc(0.55s + var(--i) * 0.07s);
-}
-
-@keyframes draw-in { to { stroke-dashoffset: 0; } }
-@keyframes pop-in  { to { opacity: 1; } }
-
-/* ── Cards column ────────────────────────────────────── */
-.km-cards {
+/* ── L1 branches ─────────────────────────────────────── */
+.km-branches { margin: 0; padding: 0; list-style: none; }
+.km-branch {
+  position: relative;
   display: grid;
-  grid-auto-rows: 1fr;
-  align-self: stretch;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  gap: 0.5rem;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 2.5rem;
+  padding: 1rem 0 1rem var(--km-gap);
 }
+/* elbow into the branch node, and the spine segment that joins the siblings */
+.km-branch::before { content: ''; position: absolute; left: 0; top: 50%; width: var(--km-gap); border-top: var(--km-line); }
+.km-branch::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; border-left: var(--km-line); }
+.km-branch:first-child::after { top: 50%; }
+.km-branch:last-child::after { bottom: 50%; }
 
-.km-row { display: flex; align-items: stretch; }
-
-.card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.875rem clamp(0.75rem, 1.5vw, 1.375rem);
+.km-topic {
+  position: relative;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--cf-border);
-  border-left: 3px solid var(--cf-amber);
+  border-left: 4px solid var(--cf-amber);
   border-radius: 0.75rem;
   background: var(--cf-surface);
-  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+  transition: border-color 0.18s, box-shadow 0.18s;
 }
+.km-topic::after { content: ''; position: absolute; left: 100%; top: 50%; width: 2.5rem; border-top: var(--km-line); }
+.km-topic h2 { margin: 0.25rem 0 0.55rem; padding: 0; border: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.3; color: var(--cf-ink); }
+.km-branch:target .km-topic,
+.km-topic:focus-within { border-color: var(--cf-gold); box-shadow: 0 3px 14px -5px color-mix(in srgb, var(--cf-gold) 35%, transparent); }
 
-.card:hover,
-.card:focus-within,
-.card:target {
-  border-color: var(--cf-gold);
-  border-left-color: var(--cf-gold);
-  background: var(--cf-warm);
-  box-shadow: 0 3px 14px -5px color-mix(in srgb, var(--cf-gold) 30%, transparent);
-  outline: none;
-}
+.km-links { margin: 0; padding: 0; list-style: none; }
+.km-links li { margin: 0; }
+.km-links a { display: inline-block; padding-block: 0.15rem; font-size: 0.8125rem; font-weight: 600; line-height: 1.5; color: var(--cf-gold); text-decoration: none; }
+.km-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-.card-head {
-  display: flex;
+/* ── L2 modules ──────────────────────────────────────── */
+.km-modules { margin: 0; padding: 0; list-style: none; }
+.km-module {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.card-num {
-  font-family: var(--vp-font-family-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--cf-gold);
-  background: var(--cf-warm);
-  padding: 0.1em 0.45em;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.card-name {
-  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-  font-weight: 700;
-  color: var(--cf-ink);
-  line-height: 1.3;
-}
-
-.card-link {
-  margin-left: auto;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--cf-gold);
-  white-space: nowrap;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.card-link:hover { text-decoration: underline; text-underline-offset: 3px; }
-
-/* Sub-topic chips */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+  column-gap: 1.5rem;
   margin: 0;
-  padding: 0;
-  list-style: none;
+  padding: 0.35rem 0 0.35rem 1.5rem;
 }
+.km-module::before { content: ''; position: absolute; left: 0; top: 50%; width: 1.5rem; border-top: var(--km-line); }
+.km-module::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; border-left: var(--km-line); }
+.km-module:first-child::after { top: 50%; }
+.km-module:last-child::after { bottom: 50%; }
 
-.chip {
-  padding: 0.18em 0.62em;
+.km-module-name {
+  position: relative;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--cf-border);
+  border-radius: 0.5rem;
+  background: var(--cf-surface);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--cf-ink);
+  transition: border-color 0.15s, background 0.15s;
+}
+.km-module-name::after { content: ''; position: absolute; left: 100%; top: 50%; width: 1.5rem; border-top: 2px dashed var(--cf-amber); }
+.km-module:hover .km-module-name { border-color: var(--cf-gold); background: var(--cf-warm); }
+
+/* ── L3 leaves ───────────────────────────────────────── */
+.km-leaves { display: flex; flex-wrap: wrap; gap: 0.35rem 0.4rem; margin: 0; padding: 0; list-style: none; }
+.km-leaves li {
+  margin: 0;
+  padding: 0.15em 0.7em;
   border: 1px solid var(--cf-border);
   border-radius: 9999px;
-  font-size: 0.72rem;
+  background: var(--cf-surface);
+  font-size: 0.8125rem;
+  line-height: 1.7;
   color: var(--cf-text);
-  background: var(--cf-soft);
-  line-height: 1.6;
-  white-space: nowrap;
-  transition: border-color 0.15s;
+  overflow-wrap: anywhere;
+}
+.km-module:hover .km-leaves li { border-color: color-mix(in srgb, var(--cf-amber) 70%, transparent); }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .km-branch { grid-template-columns: 1fr; row-gap: 0.75rem; align-items: start; }
+  .km-topic { width: fit-content; max-width: 100%; }
+  .km-topic::after { display: none; }
+  /* elbow now meets the node's heading row instead of the row centre */
+  .km-branch::before { top: 2.25rem; }
+  .km-branch:first-child::after { top: 2.25rem; }
+  .km-branch:last-child::after { bottom: auto; height: 2.25rem; }
+  .km-modules { padding-left: 1rem; border-left: var(--km-line); margin-left: 0.25rem; }
+  .km-module { padding-left: 0; }
+  .km-module::before, .km-module::after { display: none; }
 }
 
-.card:hover .chip,
-.card:focus-within .chip {
-  border-color: color-mix(in srgb, var(--cf-amber) 60%, transparent);
-}
-
-/* ── Mobile ──────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .km {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-    min-height: unset;
-    padding: 1.25rem;
-  }
-
-  .km-hub { justify-content: flex-start; }
-  .hub-outer { width: 72px; }
-  .km-svg { display: none; }
-
-  .km-cards {
-    padding-left: 1.125rem;
-    border-left: 2px solid var(--cf-amber);
-    gap: 0.625rem;
-  }
-
-  .km-row { position: relative; }
-
-  .km-row::before {
-    content: '';
-    position: absolute;
-    left: -1.5rem;
-    top: calc(50% - 4px);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--cf-amber);
-    border: 2px solid var(--cf-soft);
-  }
+@media (max-width: 760px) {
+  .km { grid-template-columns: 1fr; row-gap: 1.25rem; }
+  .km-root { width: 6.5rem; }
+  .km-root::after { display: none; }
+  .km-branch { padding-left: 1.25rem; --km-gap: 1.25rem; }
+  .km-module { grid-template-columns: 1fr; row-gap: 0.45rem; padding-block: 0.5rem; }
+  .km-module-name::after { display: none; }
 }
 </style>
