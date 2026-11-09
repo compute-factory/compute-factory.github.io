@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/public/banner.png" alt="算力工地 · Compute Factory" width="100%">
+</p>
+
 # 算力工地 · Compute Factory
 
 **前方施工 · 新手可进**
