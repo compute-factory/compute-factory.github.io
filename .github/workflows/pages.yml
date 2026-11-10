@@ -20,6 +20,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run check
       - run: npm run build
       - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3

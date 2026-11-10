@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "preview": "vitepress preview docs",
+    "check": "node scripts/check-assets.mjs",
+    "verify": "npm run check && npm run build"
   },
   "devDependencies": {
     "vitepress": "1.6.4"
