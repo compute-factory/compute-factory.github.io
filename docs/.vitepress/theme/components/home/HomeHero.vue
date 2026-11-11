@@ -10,27 +10,24 @@ import { withBase } from 'vitepress'
 
     <div class="hero-copy">
       <h1 id="home-title">算力工地</h1>
-      <p class="hero-english cf-eyebrow">Compute Factory</p>
-      <p class="hero-description">初学者友好的 AI Infra 教学站。沿着学习地图，从认识什么是大模型，到成为一名Infra工程师</p>
+      <p class="hero-description">
+        面向初学者的 AI Infra 教学站。按学习地图从大模型基础读到推理、GPU 算子和分布式训练，每篇围绕一个能动手验证的问题展开。
+      </p>
+      <a class="cf-button hero-action" :href="withBase('/guide/')">开始学习</a>
     </div>
-
-    <a class="cf-button hero-action" :href="withBase('/guide/')">
-      开始学习 <span aria-hidden="true">→</span>
-    </a>
   </section>
 </template>
 
 <style scoped>
 .home-hero {
   display: grid;
-  grid-template-columns: clamp(9rem, 16vw, 20rem) minmax(0, 1fr) auto;
-  min-height: clamp(20rem, 45svh, 42rem);
+  grid-template-columns: clamp(8rem, 14vw, 17rem) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(1.75rem, 4vw, 3.75rem);
-  padding: clamp(2rem, 4.5vw, 3.875rem);
-  margin-block: clamp(1.75rem, 4.5vw, 3.75rem) 0;
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  padding: clamp(2rem, 4vw, 3.5rem);
+  margin-block: clamp(1.75rem, 4vw, 3rem) 0;
   border: 1px solid var(--cf-border);
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   background: var(--cf-soft);
 }
 
@@ -42,42 +39,42 @@ import { withBase } from 'vitepress'
   background-size: 11px 11px;
 }
 
-.hero-logo img { width: 82%; height: auto; }
+.hero-logo img { width: 88%; height: auto; }
 
 .hero-copy h1 {
-  margin: 0.5rem 0 0.25rem;
-  font-size: clamp(2.6rem, 4.5vw, 6rem);
+  margin: 0 0 0.85rem;
+  font-size: clamp(2.5rem, 4vw, 4.5rem);
   font-weight: 800;
   letter-spacing: -0.045em;
-  line-height: 1.12;
+  line-height: 1.1;
 }
 
-.hero-english { margin-top: 0.5rem; font-size: 0.875rem; text-transform: uppercase; }
-.hero-description { max-width: 50em; margin-top: 0.875rem; color: var(--cf-text); line-height: 1.75; }
+.hero-description {
+  max-width: 38em;
+  font-size: clamp(1rem, 1.05vw, 1.125rem);
+  line-height: 1.85;
+  color: var(--cf-text);
+}
+
 .hero-action {
-  justify-self: start;
-  min-height: clamp(3.5rem, 4.4vw, 5rem);
-  padding: 0.9rem clamp(1.5rem, 2vw, 3rem);
-  font-size: clamp(1.125rem, 1.2vw, 1.75rem);
+  margin-top: clamp(1.25rem, 2vw, 1.75rem);
+  min-height: 3rem;
+  padding-inline: 1.5rem;
+  font-size: 1rem;
 }
 
-@media (min-width: 1440px) {
+@media (max-width: 760px) {
   .home-hero {
-    width: 70vw;
-    max-width: 100%;
-    margin-inline: auto;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.75rem;
   }
+
+  .hero-logo { width: 7rem; }
 }
 
-@media (max-width: 850px) {
-  .home-hero { grid-template-columns: minmax(5.5rem, 9rem) minmax(0, 1fr); }
-  .hero-action { grid-column: 2; }
-}
-
-@media (max-width: 510px) {
-  .home-hero { grid-template-columns: 1fr; gap: 1.2rem; padding: 1.5rem; }
-  .hero-logo { width: 6rem; }
-  .hero-logo img { width: 100%; }
-  .hero-action { grid-column: 1; }
+@media (max-width: 480px) {
+  .home-hero { padding: 1.25rem; }
+  .hero-copy h1 { font-size: 2.25rem; }
 }
 </style>
