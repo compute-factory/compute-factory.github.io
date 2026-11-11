@@ -74,13 +74,13 @@ npm run preview    # 预览构建产物
 | 内容 | 位置 |
 |---|---|
 | 教程正文 | `docs/guide/<名字>.md` |
-| 教程入口与导航 | `docs/.vitepress/content/learning.ts` 里对应主题的 `links` |
+| 教程入口与导航 | `docs/.vitepress/content/curriculum.ts` 里对应板块的章节条目 |
 | 参考资料 | `docs/resources.md` |
 | 图片等静态资源 | `docs/public/` |
 
-新增教程**必须同时在 `docs/.vitepress/content/learning.ts` 对应主题的 `links` 里加入口**——侧栏和教学页的知识图都是从这份数据生成的，漏了这一步，页面能直接访问但站内导航里找不到。
+新增教程**必须同时在 `docs/.vitepress/content/curriculum.ts` 对应板块里加章节条目**——上一篇/下一篇、板块页和教学页的知识图都是从这份数据生成的，漏了这一步，页面能直接访问但站内导航里找不到。
 
-改了 `docs/guide/` 里已有页面的文件名时，记得同时改 `learning.ts`、`config.mts` 和正文里的所有链接。
+改了 `docs/guide/` 里已有页面的文件名时，记得同时改 `curriculum.ts` 和正文里的所有链接。
 
 ## PR 要求
 

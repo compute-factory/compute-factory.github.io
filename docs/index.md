@@ -10,7 +10,7 @@ import HomeHero from './.vitepress/theme/components/home/HomeHero.vue'
 import HomeSections from './.vitepress/theme/components/home/HomeSections.vue'
 </script>
 
-<div class="cf-page">
+<div class="cf-page cf-page--wide">
   <HomeHero />
   <HomeSections />
 </div>

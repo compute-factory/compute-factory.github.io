@@ -1,3 +1,6 @@
 node_modules/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+
+# 本地临时脚本与截图
+tmp/

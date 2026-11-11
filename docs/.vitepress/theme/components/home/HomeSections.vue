@@ -9,49 +9,61 @@ import { homeFeatures } from '../../../content/site'
 
     <div class="feature-grid">
       <section v-for="feature in homeFeatures" :id="feature.id" :key="feature.id" class="feature cf-anchor">
-        <p class="feature-number cf-eyebrow">{{ feature.number }}</p>
         <h3>{{ feature.title }}</h3>
         <p>{{ feature.description }}</p>
-        <a :href="withBase(feature.link.href)">{{ feature.link.text }} <span aria-hidden="true">→</span></a>
+        <a :href="withBase(feature.link.href)">{{ feature.link.text }}</a>
       </section>
     </div>
-
   </section>
 </template>
 
 <style scoped>
-.home-sections { padding-block: 2.75rem 3.25rem; }
-.home-sections > h2 { margin-top: 0.35rem; font-size: clamp(1.65rem, 3vw, 2.15rem); font-weight: 750; }
+.home-sections { padding-block: 3.5rem 4rem; }
+
+.home-sections > h2 {
+  margin: 0 0 1.75rem;
+  font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.25rem;
+  gap: clamp(1.75rem, 3.5vw, 3rem);
 }
 
 .feature {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.55rem;
-  padding: 1.375rem;
-  border: 1px solid var(--cf-border);
-  border-radius: 0.875rem;
-  background: var(--cf-surface);
+  gap: 0.6rem;
+  padding-top: 1.1rem;
+  border-top: 2px solid var(--cf-ink);
 }
 
-.feature:target { border-color: var(--cf-gold); background: var(--cf-soft); }
-.feature-number { padding: 0.125rem 0.45rem; border-radius: 4px; background: var(--cf-warm); }
-.feature h3 { font-size: 1.2rem; font-weight: 700; }
-.feature p:not(.feature-number) { color: var(--cf-text); line-height: 1.7; }
+.feature:target { border-top-color: var(--cf-amber); }
 
-.home-sections a { color: var(--cf-gold); font-weight: 650; }
-.home-sections a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.feature a { margin-top: auto; padding-top: 0.2rem; }
+.feature h3 { font-size: 1.125rem; font-weight: 700; }
 
+.feature p {
+  color: var(--cf-text);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
 
-@media (max-width: 720px) {
-  .feature-grid { grid-template-columns: 1fr; }
+.feature a {
+  margin-top: auto;
+  padding-top: 0.4rem;
+  color: var(--cf-gold);
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.feature a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .home-sections { padding-block: 2.5rem 3rem; }
+  .feature-grid { grid-template-columns: 1fr; gap: 1.75rem; }
 }
 </style>
