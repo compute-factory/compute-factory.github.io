@@ -156,6 +156,19 @@
   .has-topic-bar > .VPLocalNav { top: calc(var(--vp-nav-height) + var(--cf-topbar-h)); }
 }
 
+/* ── 顶栏对齐 ───────────────────────────────────────────
+ * 默认导航的容器有最大宽度，宽屏上 logo 会跟着居中，页面之间还会因为
+ * 滚动条有无而左右跳几个像素。这里让顶栏铺满视口、左右各留固定内边距，
+ * logo 在任何页面、任何宽度下都贴在同一条竖线上。 */
+html { scrollbar-gutter: stable; }
+
+@media (min-width: 960px) {
+  html .Layout .VPNavBar .container {
+    max-width: 100%;
+    padding-inline: 2rem;
+  }
+}
+
 /* ── 文章页宽度 ─────────────────────────────────────────
  * 默认主题把无侧栏的文章锁在 992–1104px，宽屏两侧全是空白。
  * 这里让「本页目录 + 正文」整体随视口放宽。 */
