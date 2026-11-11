@@ -33,7 +33,7 @@ const chapters = computed(() =>
 
 <style scoped>
 .topic-page {
-  max-width: 52rem;
+  max-width: 80rem;
   padding-block: 2.5rem 5rem;
 }
 

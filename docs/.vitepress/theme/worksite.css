@@ -10,9 +10,12 @@
   --cf-border: #ebe3d0;
   --cf-grid: #eedfbc80;
   --cf-container: 75rem;
-  --cf-container-wide: 90rem;
+  --cf-container-wide: 112rem;
+  /* 文章页：左侧本页目录与正文的宽度，随视口放大，正文一行保持在 60 字左右 */
+  --cf-aside-w: clamp(15rem, 17vw, 21rem);
+  --cf-doc-w: clamp(44rem, 50vw, 64rem);
   --cf-gutter: clamp(1.25rem, 3vw, 3rem);
-  --vp-layout-max-width: 1440px;
+  --vp-layout-max-width: 1920px;
 
   --vp-c-brand-1: var(--cf-gold);
   --vp-c-brand-2: #925b00;
@@ -153,11 +156,51 @@
   .has-topic-bar > .VPLocalNav { top: calc(var(--vp-nav-height) + var(--cf-topbar-h)); }
 }
 
-/* 本页目录里的小标题一般较长，换行显示而不是省略 */
+/* ── 文章页宽度 ─────────────────────────────────────────
+ * 默认主题把无侧栏的文章锁在 992–1104px，宽屏两侧全是空白。
+ * 这里让「本页目录 + 正文」整体随视口放宽。 */
+@media (min-width: 960px) {
+  html .Layout .VPDoc:not(.has-sidebar) .container {
+    max-width: calc(var(--cf-aside-w) + var(--cf-doc-w) + 8rem);
+  }
+  html .Layout .VPDoc:not(.has-sidebar) .content { max-width: none; }
+  html .Layout .VPDoc.has-aside .content-container { max-width: var(--cf-doc-w); }
+}
+
+@media (min-width: 1280px) {
+  html .Layout .VPDoc .left-aside { max-width: calc(var(--cf-aside-w) + 2rem); }
+  html .Layout .VPDoc .aside-container,
+  html .Layout .VPDoc .aside-curtain { width: var(--cf-aside-w); }
+}
+
+/* ── 本页目录 ───────────────────────────────────────────
+ * 二级标题是主干：字重大、颜色深；三级标题缩进，字号小、颜色浅。
+ * 长标题换行并悬挂缩进，行距收紧，不再按 32px 的固定行高撑开。 */
+.VPDocAsideOutline .outline-title {
+  margin-bottom: 0.25rem;
+  font-size: 0.9375rem;
+  color: var(--cf-ink);
+}
+
 .VPDocAsideOutline .outline-link {
+  padding-block: 0.3rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--cf-ink);
   white-space: normal;
   text-overflow: clip;
 }
+
+.VPDocAsideOutline .nested .outline-link {
+  padding-left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--cf-muted);
+}
+
+.VPDocAsideOutline .outline-link:hover,
+.VPDocAsideOutline .outline-link.active { color: var(--cf-gold); }
 
 @media (min-width: 1101px) {
   .VPNavBar .VPNavBarSearch { flex-grow: 0; }
