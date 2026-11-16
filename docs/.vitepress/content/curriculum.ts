@@ -118,11 +118,18 @@ export const curriculum: Record<string, Chapter[]> = {
       items: ['PagedAttention：KV Cache 的分页管理', 'Continuous Batching：连续批处理调度', 'Chunked Prefill：长请求的分块预填充', 'Prefix Caching：公共前缀的缓存复用', '各项优化的组合效果与取舍'],
     },
     {
-      slug: 'compute-precision',
-      title: '计算与精度优化',
-      summary: '量化、算子融合、推测解码，以及怎么确认精度没坏。',
+      slug: 'quantization',
+      title: '模型量化与精度评估',
+      summary: '用比特数换显存与带宽，并验证量化后效果没有退化。',
       status: 'planned',
-      items: ['量化的三个对象：权重、激活与 KV Cache', 'fp16、bf16、fp8 与 int8 的精度与开销对比', '算子融合与 CUDA Graphs', '推测解码', '效果评估：吞吐之外的正确性指标'],
+      items: ['量化的三个对象：权重、激活与 KV Cache', 'fp16、bf16、fp8 与 int8 的精度与开销对比', '主流量化方法：GPTQ、AWQ 与 SmoothQuant', '效果评估：困惑度与下游任务退化测试'],
+    },
+    {
+      slug: 'execution-acceleration',
+      title: '执行与解码加速',
+      summary: '不改模型精度，靠算子融合、CUDA Graphs 与投机解码降低延迟。',
+      status: 'planned',
+      items: ['Decode 阶段的算力闲置问题', '算子融合：减少显存往返', 'CUDA Graphs：消除 Kernel 启动开销', '投机解码：Draft-then-Verify 机制与加速比边界'],
     },
     {
       slug: 'multi-gpu-inference',
