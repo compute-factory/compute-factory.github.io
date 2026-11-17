@@ -86,6 +86,53 @@
   text-underline-offset: 2px;
 }
 
+/* 正文图片不超过容器宽度：论文原图常有 1600px 以上的宽度 */
+.vp-doc img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 长公式在窄屏上单独横向滚动，避免把整页撑出横向滚动条。
+ * MathJax 会在行内样式里写死 display:flex 和 min-width，必须用 !important 覆盖。 */
+.vp-doc mjx-container[display='true'] {
+  display: block !important;
+  min-width: 0 !important;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem;
+}
+
+/* 文章操作栏在宽屏下绝对定位到正文栏右侧，需要容器作为参照 */
+@media (min-width: 1280px) {
+  .content-container:has(> .paper-tools),
+  .content-container:has(> .guide-tools) {
+    position: relative;
+  }
+}
+
+/* 只有 math-overflow.ts 标记出来的超宽行内公式才改为滚动；
+ * 普通公式保持 MathJax 原生 inline，基线由 MathJax 自己负责。
+ * 垂直对齐由脚本按每个公式的 SVG 下沉量单独补偿。 */
+@media screen {
+  .vp-doc mjx-container.math-overflow {
+    display: inline-block;
+    line-height: 1;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+
+/* 窄屏：宽表格自己横向滚动，避免把正文挤出屏幕。
+ * 只作用于屏幕，打印时仍按正常表格排版。 */
+@media screen and (max-width: 960px) {
+  .vp-doc table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
 .vp-doc [class*='language-'] > span.lang {
   font-family: var(--vp-font-family-mono);
   letter-spacing: 0.04em;
@@ -228,3 +275,74 @@ html { scrollbar-gutter: stable; }
     padding-inline: 0.5rem;
   }
 }
+
+/* ── 打印与导出 PDF ─────────────────────────────────────
+ * 论文报告的「下载 PDF」由 scripts/build-paper-pdfs.mjs 用无头浏览器
+ * 打印页面生成，读者也可以直接 Ctrl+P 存成 PDF。打印稿只保留正文：
+ * 去掉导航、目录、页脚、工具条，强制浅色，并避免标题、图表跨页断开。 */
+@media print {
+  .VPNav,
+  .VPLocalNav,
+  .VPSidebar,
+  .VPDocAside,
+  .VPDocFooter,
+  .VPFooter,
+  .VPSkipLink,
+  .topic-bar,
+  .guide-tools,
+  .paper-tools,
+  .paper-reader { display: none !important; }
+
+  html, body { background: #fff !important; }
+  html { scrollbar-gutter: auto; }
+  .Layout .VPContent { padding: 0 !important; }
+  .Layout .VPDoc { padding: 0 !important; }
+  .Layout .VPDoc .container { display: block !important; max-width: none !important; }
+  .Layout .VPDoc .content { max-width: none !important; padding: 0 !important; }
+  .Layout .VPDoc .content-container { max-width: none !important; }
+
+  /* 深色主题下打印同样用浅色，避免整页黑底 */
+  .dark {
+    --cf-ink: #17150f;
+    --cf-text: #2f2b22;
+    --cf-muted: #4a4437;
+    --cf-surface: #fff;
+    --cf-soft: #f7f3e8;
+    --cf-border: #d8cfb9;
+    --cf-gold: #6b4300;
+    --vp-c-text-1: #17150f;
+    --vp-c-text-2: #2f2b22;
+    --vp-c-text-3: #4a4437;
+    --vp-c-bg: #fff;
+    --vp-c-bg-alt: #f7f3e8;
+    --vp-c-divider: #d8cfb9;
+  }
+
+  .vp-doc { font-size: 10.5pt; color: #17150f; }
+  .vp-doc h1 { font-size: 20pt; }
+  .vp-doc h2 { margin-top: 1.5em; font-size: 14pt; }
+  .vp-doc h3 { font-size: 12pt; }
+  .vp-doc p,
+  .vp-doc li { line-height: 1.7; }
+  .vp-doc a { color: inherit; text-decoration: underline; }
+  .vp-doc img { max-width: 100%; height: auto; }
+  .vp-doc table { font-size: 9pt; }
+  .vp-doc pre { border: 1px solid #d8cfb9; background: #f7f3e8 !important; }
+  .vp-doc pre,
+  .vp-doc pre code { white-space: pre-wrap; word-break: break-word; }
+  /* 打印稿按整页宽度排版：公式缩放到页宽，不再需要横向滚动 */
+  .vp-doc mjx-container[display='true'] {
+    min-width: 0 !important;
+    max-width: 100%;
+    overflow: visible;
+  }
+  .vp-doc mjx-container[display='true'] > svg { max-width: 100%; height: auto; }
+  .vp-doc :is(h1, h2, h3, h4) { break-after: avoid; }
+  .vp-doc :is(figure, blockquote, pre, table, img, mjx-container) { break-inside: avoid; }
+  /* 提示块整体不拆页，避免只把「WARNING」标签留在页底 */
+  .vp-doc .custom-block { break-inside: avoid; }
+
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@page { margin: 16mm 14mm; }

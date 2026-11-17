@@ -3,9 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/sync-article-downloads.mjs",
     "dev": "vitepress dev docs",
+    "prebuild": "node scripts/sync-article-downloads.mjs",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs",
+    "articles:pdf": "node scripts/build-article-pdfs.mjs",
     "check": "node scripts/check-assets.mjs",
     "verify": "npm run check && npm run build"
   },

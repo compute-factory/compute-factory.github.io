@@ -2,5 +2,13 @@ node_modules/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 
+# 可下载文章的 Markdown 副本，构建前由 scripts/sync-article-downloads.mjs 生成
+# 同目录下的 .pdf 是生成后提交的正式产物，不要一起忽略
+docs/public/papers/files/*.md
+docs/public/guide/files/**/*.md
+
+# 教程下载清单，构建前根据实际文件生成
+docs/.vitepress/content/guide-downloads.generated.ts
+
 # 本地临时脚本与截图
 tmp/
