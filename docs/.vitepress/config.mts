@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { findChapterByPath } from './content/curriculum'
+import { findPaperByPath } from './content/papers'
 import { organization, contactEmail, siteNav } from './content/site'
 
 export default defineConfig({
@@ -7,11 +8,11 @@ export default defineConfig({
   title: '算力工地',
   description: '面向新手的中文 AI Infra 学习路线、动手实验与教程索引。',
   head: [['link', { rel: 'icon', type: 'image/png', href: '/logo.png' }]],
-  // 占位章节不收录，把 curriculum 里的 status 改成 published 就会自动放开
+  // 占位章节不收录，把 curriculum 或 papers 里的 status 改成 published 就会自动放开
   transformHead({ pageData }) {
     const routePath = '/' + pageData.relativePath.replace(/(index)?\.md$/, '')
-    const chapter = findChapterByPath(routePath)
-    if (!chapter || chapter.status === 'published') return []
+    const entry = findChapterByPath(routePath) ?? findPaperByPath(routePath)
+    if (!entry || entry.status === 'published') return []
     return [['meta', { name: 'robots', content: 'noindex' }]]
   },
   // 公式用 $...$ / $$...$$，构建时渲染成 SVG，不需要额外的前端脚本

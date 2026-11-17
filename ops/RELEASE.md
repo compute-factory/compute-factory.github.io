@@ -28,6 +28,7 @@ npm run preview # 起本地服务,浏览器打开 http://localhost:4173
 - [ ] 新增图片的体积合理(`docs/public/` 下,单张建议 < 300 KB)
 - [ ] 移动端宽度看过(375px 不失衡、不横向滚动)
 - [ ] 新增页面已加入 `docs/.vitepress/content/curriculum.ts`(否则侧栏没有入口)
+- [ ] 文章正文或打印样式改过时,已重跑 `npm run build && npm run articles:pdf && npm run build`,并确认 `docs/public/{papers,guide}/files/` 下的 PDF 是最新版
 
 ---
 

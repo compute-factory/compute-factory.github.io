@@ -11,11 +11,17 @@
 | /guide/{方向}/ | docs/guide/{方向}/index.md | 板块页：页头、开始学习和章节目录 |
 | /guide/{方向}/{章节}.html | docs/guide/{方向}/{章节}.md | 章节页，正文由 Markdown 写 |
 | /guide/first-lab.html | docs/guide/first-lab.md | Markdown 实验正文 |
+| /papers/ | docs/papers/index.md | 论文阅读板块页：论文列表与精读入口 |
+| /papers/{论文}.html | docs/papers/{论文}.md | 论文精读页，正文由 Markdown 写 |
 | /resources.html | docs/resources.md | 阅读资料与推荐项目 |
 
-板块（一级标题）和章节（二级标题）都来自 curriculum.ts，页面文件只是一层壳。30 个章节页现在只在 frontmatter 里写标题和描述，正文位置放一个 `<ChapterPlaceholder />`，由它按路由从 curriculum 里取出计划小节渲染。写正文时删掉这一行，左侧本页目录就会按正文的二、三级标题生成。
+板块（一级标题）和章节（二级标题）都来自 curriculum.ts，页面文件只是一层壳。30 个章节页现在只在 frontmatter 里写标题和描述，正文位置放一个 `<ChapterPlaceholder />`，由它按路由从 curriculum 里取出计划小节渲染。写正文时删掉这一行，左侧本页目录就会按正文的二、三级标题生成。论文阅读列表由 content/papers.ts 驱动。
 
-首页的论文阅读和推荐项目导航链接到首页对应锚点。「如何开始」的三个入口为主题教程、论文阅读、推荐项目。联系方式集中配置在 content/site.ts，由 config.mts 注入默认主题页脚，和站点署名一起以小字显示。
+顶栏「论文阅读」指向 `/papers/`，「推荐项目」链接到首页对应锚点。「如何开始」的三个入口为主题教程、论文阅读、推荐项目。联系方式集中配置在 content/site.ts，由 config.mts 注入默认主题页脚，和站点署名一起以小字显示。
+
+论文精读页顶部的下载与原文工具栏由 WorksiteLayout 按路由注入，数据来自 `content/papers.ts`：`arxivId` 生成 arXiv 摘要页和 PDF 直链，「阅读 PDF」用弹层内嵌原文；`reportPdf` 控制是否显示报告 PDF 下载。报告副本放在 `docs/public/papers/files/`，Markdown 由 `npm run dev` / `npm run build` 前的同步脚本自动生成且不入库；PDF 由 `npm run articles:pdf` 用本机 Chrome/Edge 打印后提交，正文或打印样式改动后需要重新生成并构建。新增论文时填好 `arxivId`，生成 PDF 后再打开 `reportPdf`。
+
+主题课程同样带下载栏：`scripts/article-targets.mjs` 把 `docs/guide/**/*.md` 中已写正文的页面（不含 `index.md` 和 `<ChapterPlaceholder />` 占位章）纳入清单，页面顶部显示 Markdown / PDF 下载。教程下载副本放在 `docs/public/guide/files/`，目录结构与 `docs/guide/` 一致；`content/guide-downloads.generated.ts` 由构建前脚本生成且不入库，页面用它判断某篇文章有没有 PDF。新写完一章后无需改代码，重新构建并执行 `npm run articles:pdf` 即可。
 
 ## 文件职责
 
@@ -25,6 +31,7 @@
 | docs/.vitepress/content/site.ts | 顶部导航、首页板块文案、仓库地址 |
 | docs/.vitepress/content/learning.ts | 五个板块的 id 和标题 |
 | docs/.vitepress/content/curriculum.ts | 章节的 slug、标题、简介、状态与计划小节，修改课程规划优先编辑这里 |
+| docs/.vitepress/content/papers.ts | 论文精读的 slug、标题、出处、简介、状态与核心小节 |
 | docs/.vitepress/theme/index.ts | 主题注册与全局 CSS 入口 |
 | docs/.vitepress/theme/WorksiteLayout.vue | 扩展默认布局的导航插槽 |
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
@@ -36,6 +43,14 @@
 | docs/.vitepress/theme/components/learning/TopicOverview.vue | 板块页：板块标题和章节目录 |
 | docs/.vitepress/theme/components/learning/TopicBar.vue | 主题教程下所有页面常驻的板块横条，让位偏移见 worksite.css 的「主题教程板块横条」 |
 | docs/.vitepress/theme/components/learning/ChapterPlaceholder.vue | 章节占位页：按路由认领章节，只列标题和计划小节 |
+| docs/.vitepress/theme/components/papers/PapersOverview.vue | 论文阅读页：标题、论文精读目录与下载入口 |
+| docs/.vitepress/theme/components/papers/PaperTools.vue | 论文精读页顶部：下载报告、阅读原文 PDF 的弹层 |
+| docs/.vitepress/theme/components/guide/GuideTools.vue | 主题课程正文页的 Markdown / PDF 下载栏 |
+| docs/public/papers/files/ | 论文报告的可下载副本：`.pdf` 提交进仓库，`.md` 由构建前脚本生成 |
+| docs/public/guide/files/ | 主题课程正文的下载副本，目录结构与 `docs/guide/` 一致 |
+| scripts/article-targets.mjs | 扫描可下载文章，约定下载路径，生成教程下载清单 |
+| scripts/sync-article-downloads.mjs | 构建与开发前复制 Markdown 副本，并生成下载清单 |
+| scripts/build-article-pdfs.mjs | 用本机 Chrome/Edge 无头打印文章 PDF（`npm run articles:pdf`） |
 | docs/public/logo.png | 站点标志 |
 | .github/workflows/pages.yml | PR 构建检查与 main 自动发布 |
 
@@ -65,7 +80,7 @@
 
 ## 本地开发和验证
 
-使用 Node.js 24，执行 npm ci 安装锁定依赖，npm run dev 启动开发预览。修改后执行 npm run build，再用 npm run preview 检查构建结果。
+使用 Node.js 24，执行 npm ci 安装锁定依赖，npm run dev 启动开发预览。修改后执行 npm run build，再用 npm run preview 检查构建结果。文章正文或打印样式改动后执行 `npm run build && npm run articles:pdf && npm run build`，PDF 生成与打印样式说明见 `scripts/build-article-pdfs.mjs`。
 
 布局改动至少检查桌面、2560px 大屏和 375px 手机宽度，并检查 320px 窄屏、浏览器缩放、导航折叠、开始学习按钮、知识图全部节点、搜索和现有实验页。顶部专题导航应定位对应节点，节点链接应能进入阅读入口，页面应无横向溢出。深色主题也要检查文字和背景对比。
 
