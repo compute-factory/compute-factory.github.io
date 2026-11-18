@@ -46,8 +46,8 @@ export const curriculum: Record<string, Chapter[]> = {
     {
       slug: 'first-experiment',
       title: '第一次实验',
-      summary: '把参数量换算成显存占用，加载一个小模型并记录跑出来的数字。',
-      status: 'planned',
+      summary: '用 CPU 加载一个小模型，估算参数大小，再测量加载耗时和进程内存。',
+      status: 'published',
       items: ['环境准备与版本检查', '参数量到字节数的换算', '三种精度下的权重占用估算', '小模型加载与耗时记录', '结果校验与偏差排查', '实验记录整理'],
     },
   ],
