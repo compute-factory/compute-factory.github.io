@@ -15,7 +15,7 @@
 | /papers/{论文}.html | docs/papers/{论文}.md | 论文精读页，正文由 Markdown 写 |
 | /resources.html | docs/resources.md | 阅读资料与推荐项目 |
 
-板块（一级标题）和章节（二级标题）都来自 curriculum.ts，页面文件只是一层壳。30 个章节页现在只在 frontmatter 里写标题和描述，正文位置放一个 `<ChapterPlaceholder />`，由它按路由从 curriculum 里取出计划小节渲染。写正文时删掉这一行，左侧本页目录就会按正文的二、三级标题生成。论文阅读列表由 content/papers.ts 驱动。
+板块（一级标题）和章节（二级标题）都来自 curriculum.ts，页面文件只是一层壳。30 个章节页现在只在 frontmatter 里写标题和描述，正文位置放一个 `<ChapterPlaceholder />`，由它按路由从 curriculum 里取出计划小节渲染。写正文时删掉这一行，左侧本页目录就会按正文的二、三级标题生成。论文阅读列表由 content/papers.ts 驱动。新增论文时填写原名、作者、会议或期刊、首次公开日期和一句中文简介，从 paperCategories 选择一个或多个固定分类。目录按首发日期倒序排列，支持分类筛选和关键词组合搜索。
 
 顶栏「论文阅读」指向 `/papers/`，「推荐项目」链接到首页对应锚点。「如何开始」的三个入口为主题教程、论文阅读、推荐项目。联系方式集中配置在 content/site.ts，由 config.mts 注入默认主题页脚，和站点署名一起以小字显示。
 
@@ -31,7 +31,7 @@
 | docs/.vitepress/content/site.ts | 顶部导航、首页板块文案、仓库地址 |
 | docs/.vitepress/content/learning.ts | 五个板块的 id 和标题 |
 | docs/.vitepress/content/curriculum.ts | 章节的 slug、标题、简介、状态与计划小节，修改课程规划优先编辑这里 |
-| docs/.vitepress/content/papers.ts | 论文精读的 slug、标题、出处、简介、状态与核心小节 |
+| docs/.vitepress/content/papers.ts | 论文元数据、固定分类和精读文件路径 |
 | docs/.vitepress/theme/index.ts | 主题注册与全局 CSS 入口 |
 | docs/.vitepress/theme/WorksiteLayout.vue | 扩展默认布局的导航插槽 |
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
@@ -45,7 +45,7 @@
 | docs/.vitepress/theme/components/learning/TopicIcon.vue | 按板块 id 选择图标，供内页标题、知识图和板块横条共用 |
 | docs/.vitepress/theme/components/learning/TopicBar.vue | 主题教程下所有页面常驻的板块横条，让位偏移见 worksite.css 的「主题教程板块横条」 |
 | docs/.vitepress/theme/components/learning/ChapterPlaceholder.vue | 章节占位页：按路由认领章节，只列标题和计划小节 |
-| docs/.vitepress/theme/components/papers/PapersOverview.vue | 论文阅读页：标题、论文精读目录与下载入口 |
+| docs/.vitepress/theme/components/papers/PapersOverview.vue | 论文阅读页：搜索、分类筛选、论文条目与下载入口 |
 | docs/.vitepress/theme/components/papers/PaperTools.vue | 论文精读页顶部：下载报告、阅读原文 PDF 的弹层 |
 | docs/.vitepress/theme/components/guide/GuideTools.vue | 主题课程正文页的 Markdown / PDF 下载栏 |
 | docs/public/papers/files/ | 论文报告的可下载副本：`.pdf` 提交进仓库，`.md` 由构建前脚本生成 |

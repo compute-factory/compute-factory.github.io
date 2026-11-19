@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { defineConfig } from 'vitepress'
 import { findChapterByPath } from './content/curriculum'
-import { findPaperByPath } from './content/papers'
+import { findPaperByPath, paperCategories } from './content/papers'
 import { organization, contactEmail, siteNav } from './content/site'
 
 export default defineConfig({
@@ -13,7 +13,13 @@ export default defineConfig({
   // 占位章节不收录，把 curriculum 或 papers 里的 status 改成 published 就会自动放开
   transformHead({ pageData }) {
     const routePath = '/' + pageData.relativePath.replace(/(index)?\.md$/, '')
-    const entry = findChapterByPath(routePath) ?? findPaperByPath(routePath)
+    const paper = findPaperByPath(routePath)
+    if (/^\/papers\/[^/]+$/.test(routePath) && (
+      !paper?.categories?.length || !paper.categories.every(category => paperCategories.includes(category))
+    )) {
+      throw new Error(`${pageData.relativePath} 需要在 content/papers.ts 登记并选择至少一个固定分类`)
+    }
+    const entry = paper ?? findChapterByPath(routePath)
     if (!entry || entry.status === 'published') return []
     return [['meta', { name: 'robots', content: 'noindex' }]]
   },
