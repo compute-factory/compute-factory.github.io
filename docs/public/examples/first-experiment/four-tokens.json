@@ -1,0 +1,23 @@
+{
+  "python": "3.11.18",
+  "os": "Windows-10-10.0.22631-SP0",
+  "torch": "2.13.0+cpu",
+  "transformers": "5.15.0",
+  "psutil": "7.2.2",
+  "cpu_threads": 4,
+  "model_type": "llama",
+  "device": "cpu",
+  "dtype": "float32",
+  "parameters": 134515008,
+  "parameter_bytes": 538060032,
+  "load_seconds": 0.4405530999938492,
+  "rss_bytes": {
+    "before_load": 342908928,
+    "after_load": 892432384,
+    "after_generate": 900300800
+  },
+  "input_tokens": 37,
+  "new_tokens": 4,
+  "prompt": "What is the capital of France?",
+  "reply": "The capital of France"
+}

@@ -1,0 +1,11 @@
+SmolLM2-135M-Instruct | CPU | FP32 | 4 threads
+Parameters: 134,515,008   FP32 parameter tensors: 513.13 MiB
+Model load: 1.086 s (local files)
+
+Process RSS               MiB
+  Before model load       437.58
+  After model load        961.03
+  After generation        968.59
+
+Prompt: What is the capital of France?
+Reply (8 new tokens, including any EOS): The capital of France is Paris.
