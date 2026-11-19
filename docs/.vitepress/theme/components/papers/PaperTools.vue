@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BookOpen, FileText } from '@lucide/vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 import type { Paper } from '../../../content/papers'
@@ -51,7 +52,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="paper-tools">
     <div class="tool-group">
-      <span class="tool-label">精读报告</span>
+      <span class="tool-label"><FileText :size="15" aria-hidden="true" />精读报告</span>
       <a class="tool-link" :href="mdHref" :download="`${fileBase}-精读报告.md`">下载 Markdown</a>
       <a
         v-if="paper.reportPdf"
@@ -61,7 +62,7 @@ onBeforeUnmount(() => {
       >下载 PDF</a>
     </div>
     <div v-if="pdfUrl || absUrl" class="tool-group">
-      <span class="tool-label">原文</span>
+      <span class="tool-label"><BookOpen :size="15" aria-hidden="true" />原文</span>
       <button v-if="pdfUrl" type="button" class="tool-link tool-link--primary" @click="openReader">
         阅读 PDF
       </button>
@@ -112,7 +113,7 @@ onBeforeUnmount(() => {
   padding: 0.5rem 0.65rem;
   border: 1px solid var(--cf-border);
   border-radius: 0.5rem;
-  background: var(--cf-soft);
+  background: var(--cf-section-tint);
   font-size: 0.8125rem;
 }
 
@@ -126,7 +127,7 @@ onBeforeUnmount(() => {
 .tool-label {
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--cf-muted);
+  color: var(--cf-section-ink);
 }
 
 .tool-link {

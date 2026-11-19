@@ -1,12 +1,14 @@
+import { BookOpenText, FileText, FolderGit2, House } from '@lucide/vue'
+
 export const repository = 'https://github.com/compute-factory/compute-factory.github.io'
 export const organization = 'https://github.com/compute-factory'
 export const contactEmail = 'wsj040303@gmail.com'
 
 export const siteNav = [
-  { text: '首页', link: '/', activeMatch: '^/$' },
-  { text: '主题教程', link: '/guide/', activeMatch: '^/guide/' },
-  { text: '论文阅读', link: '/papers/', activeMatch: '^/papers/' },
-  { text: '推荐项目', link: '/#recommended-projects' },
+  { text: '首页', icon: House, link: '/', activeMatch: '^/$' },
+  { text: '主题教程', icon: BookOpenText, link: '/guide/', activeMatch: '^/guide/' },
+  { text: '论文阅读', icon: FileText, link: '/papers/', activeMatch: '^/papers/' },
+  { text: '推荐项目', icon: FolderGit2, link: '/#recommended-projects' },
 ]
 
 export const homeFeatures = [

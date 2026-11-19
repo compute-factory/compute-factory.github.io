@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
+import TopicIcon from './TopicIcon.vue'
 import { learningTopics } from '../../../content/learning'
 import { curriculum, chapterHref, topicPath } from '../../../content/curriculum'
 </script>
@@ -10,7 +11,7 @@ import { curriculum, chapterHref, topicPath } from '../../../content/curriculum'
     <ul class="km-branches">
       <li v-for="topic in learningTopics" :id="topic.id" :key="topic.id" class="km-branch cf-anchor">
         <div class="km-topic">
-          <h2><a class="km-topic-link" :href="withBase(topicPath(topic.id))">{{ topic.title }}</a></h2>
+          <h2><a class="km-topic-link" :href="withBase(topicPath(topic.id))"><TopicIcon :topic-id="topic.id" />{{ topic.title }}</a></h2>
         </div>
 
         <ul class="km-modules">
@@ -60,16 +61,17 @@ import { curriculum, chapterHref, topicPath } from '../../../content/curriculum'
 
 .km-topic {
   position: relative;
-  padding: 0.9rem 1rem;
+
   border: 1px solid var(--cf-border);
   border-left: 4px solid var(--cf-amber);
   border-radius: 0.75rem;
-  background: var(--cf-surface);
+  background: var(--cf-warm);
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 .km-topic::after { content: ''; position: absolute; left: 100%; top: 50%; width: 2.5rem; border-top: var(--km-line); }
 .km-topic h2 { margin: 0; padding: 0; border: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.3; color: var(--cf-ink); }
-.km-topic-link { color: inherit; text-decoration: none; }
+.km-topic-link { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1rem; color: inherit; text-decoration: none; }
+.km-topic-link svg { flex: none; color: var(--cf-gold); }
 .km-topic-link:hover { color: var(--cf-gold); text-decoration: underline; text-underline-offset: 3px; }
 .km-branch:target .km-topic,
 .km-topic:focus-within { border-color: var(--cf-gold); box-shadow: 0 3px 14px -5px color-mix(in srgb, var(--cf-gold) 35%, transparent); }

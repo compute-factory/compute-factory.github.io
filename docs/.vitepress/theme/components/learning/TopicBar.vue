@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 import { useData, withBase } from 'vitepress'
 import { learningTopics } from '../../../content/learning'
+import TopicIcon from './TopicIcon.vue'
 import { topicPath } from '../../../content/curriculum'
 
 const { page } = useData()
@@ -36,7 +37,7 @@ watch(activeId, revealActive)
         :href="withBase(topicPath(topic.id))"
         :aria-current="topic.id === activeId ? 'page' : undefined"
       >
-        {{ topic.title }}
+        <TopicIcon :topic-id="topic.id" />{{ topic.title }}
       </a>
     </div>
   </nav>
@@ -83,6 +84,7 @@ watch(activeId, revealActive)
   display: flex;
   align-items: center;
   flex: none;
+  gap: 0.45rem;
   border-bottom: 2px solid transparent;
   font-size: 1.0625rem;
   font-weight: 600;

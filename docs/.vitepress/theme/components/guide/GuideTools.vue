@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Download } from '@lucide/vue'
 import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
 import { guideDownloads } from '../../../content/guide-downloads.generated'
@@ -20,7 +21,7 @@ const pdfHref = computed(() => withBase(`/guide/files/${relative.value.replace(/
 
 <template>
   <div v-if="download?.md" class="guide-tools">
-    <span class="tool-label">下载本页</span>
+    <span class="tool-label"><Download :size="15" aria-hidden="true" />下载本页</span>
     <a class="tool-link" :href="mdHref" :download="`${fileBase}.md`">Markdown</a>
     <a v-if="download.pdf" class="tool-link" :href="pdfHref" :download="`${fileBase}.pdf`">PDF</a>
   </div>

@@ -35,12 +35,14 @@
 | docs/.vitepress/theme/index.ts | 主题注册与全局 CSS 入口 |
 | docs/.vitepress/theme/WorksiteLayout.vue | 扩展默认布局的导航插槽 |
 | docs/.vitepress/theme/worksite.css | 全站颜色、字体、页面宽度与通用按钮 |
+| docs/.vitepress/theme/components/SectionMark.vue | 按页面选择标题图标，供总览、目录和文章共用 |
 | docs/.vitepress/theme/components/RepositoryLink.vue | 桌面和手机共用的 GitHub 按钮 |
-| docs/.vitepress/theme/components/home/HomeHero.vue | Logo、站名、介绍和开始学习按钮 |
+| docs/.vitepress/theme/components/home/HomeHero.vue | 首页站名、芯片插图与字符流、开始学习按钮 |
 | docs/.vitepress/theme/components/home/HomeSections.vue | 「如何开始」标题及三个板块入口 |
 | docs/.vitepress/theme/components/learning/LearningOverview.vue | 教学页导航、标题和地图容器 |
 | docs/.vitepress/theme/components/learning/KnowledgeMap.vue | 可点击知识图及窄屏排列 |
 | docs/.vitepress/theme/components/learning/TopicOverview.vue | 板块页：板块标题和章节目录 |
+| docs/.vitepress/theme/components/learning/TopicIcon.vue | 按板块 id 选择图标，供内页标题、知识图和板块横条共用 |
 | docs/.vitepress/theme/components/learning/TopicBar.vue | 主题教程下所有页面常驻的板块横条，让位偏移见 worksite.css 的「主题教程板块横条」 |
 | docs/.vitepress/theme/components/learning/ChapterPlaceholder.vue | 章节占位页：按路由认领章节，只列标题和计划小节 |
 | docs/.vitepress/theme/components/papers/PapersOverview.vue | 论文阅读页：标题、论文精读目录与下载入口 |
@@ -66,15 +68,17 @@
 
 连线全部由 CSS 伪元素绘制（KnowledgeMap.vue 顶部的 --km-line 与 --km-gap），随内容高度自动对齐，无需维护像素坐标，也不使用 SVG。桌面每个方向一个主节点，右侧一列二级模块，每个模块后接一组知识点。1100px 以下主节点移到模块上方，760px 以下整体纵向排列。
 
-首页与教学页使用流式全宽布局，外边距由 --cf-page-gutter 控制。全站导航宽度通过 --vp-layout-max-width 跟随视口。地图高度随内容增长，后续扩展继续使用结构化数据驱动地图。
+首页和教学页通过 --cf-gutter 设置两侧留白。全站导航宽度通过 --vp-layout-max-width 跟随视口。地图高度随内容增长，后续扩展继续使用结构化数据驱动地图。
 
-首页首屏是全宽布局中的独立区块。在 1440px 及以上视口下使用 70vw 并水平居中，小屏使用可用内容宽度。「开始学习」按钮的字号、内边距和高度随视口适配，相关规则位于 HomeHero.vue。
+首页首屏和下方入口共用 docs/index.md 的宽度设置。HomeHero.vue 在宽屏左右排列介绍与芯片插图，在手机上改为上下排列。字符雨和标题流光由 CSS 绘制，系统开启“减少动态效果”时显示静态版本。
 
 内部链接通过 VitePress 的 withBase 处理。修改 id 时同步检查已有外链和锚点。
 
 页面排版使用组件内的 scoped CSS。全站颜色、字体和间距基准放在 worksite.css，颜色通过 --cf-* 变量访问，并为深色模式提供对应值。Inter 使用 VitePress 自带字体；中文和等宽字体使用系统字体回退。
 
 首页与教学总览使用 layout: page，普通文章继续使用默认文档布局。新增页面应明确属于哪种布局，避免将文章排版规则覆盖到自定义页面。
+
+导航标签和图标在 content/site.ts 一起配置，config.mts 将它们渲染为桌面和手机菜单共用的标签。文章标题的图标在 Markdown 渲染阶段插入，标题锚点与下载稿仍由原文生成。章节目录从 curriculum.ts 读取发布状态。
 
 桌面导航在 1101px 及以上采用居中展开的菜单和随视口放大的字号。样式集中在 worksite.css，通过默认主题类名覆盖布局；升级 VitePress 时需复核这些选择器。小屏继续使用默认折叠菜单。
 
