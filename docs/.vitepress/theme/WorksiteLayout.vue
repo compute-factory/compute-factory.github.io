@@ -12,6 +12,7 @@ import { guideDownloads } from '../content/guide-downloads.generated'
 import { installMathOverflow } from './math-overflow'
 
 const { page } = useData()
+const section = computed(() => page.value.relativePath.split('/')[0].replace(/\.md$/, ''))
 // 主题教程下的所有页面（总览、板块、章节、实验）都带板块横条
 const hasTopicBar = computed(() => page.value.relativePath.startsWith('guide/'))
 // 论文精读页顶部带下载与原文入口；列表页自己渲染操作按钮
@@ -37,7 +38,7 @@ watch(() => page.value.relativePath, () => {
 </script>
 
 <template>
-  <DefaultTheme.Layout :class="{ 'has-topic-bar': hasTopicBar }">
+  <DefaultTheme.Layout :data-section="section" :class="{ 'has-topic-bar': hasTopicBar }">
     <template v-if="hasTopicBar" #layout-top><TopicBar /></template>
     <template #doc-before>
       <GuideTools v-if="guideDownload?.md" />

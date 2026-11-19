@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { Star } from '@lucide/vue'
 import { repository } from '../../content/site'
 </script>
 
 <template>
   <a class="repo-link" :href="repository" target="_blank" rel="noopener noreferrer">
-    <span aria-hidden="true">☆</span> Star on GitHub
+    <Star :size="16" :stroke-width="1.7" aria-hidden="true" /> Star on GitHub
   </a>
 </template>
 
@@ -29,7 +30,7 @@ import { repository } from '../../content/site'
   background: var(--cf-soft);
 }
 
-.repo-link span { color: var(--cf-gold); font-size: 1.1rem; }
+.repo-link svg { color: var(--cf-gold); }
 
 @media (max-width: 767px) {
   .repo-link { margin: 1rem 0 0; }

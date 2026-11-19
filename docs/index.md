@@ -10,7 +10,11 @@ import HomeHero from './.vitepress/theme/components/home/HomeHero.vue'
 import HomeSections from './.vitepress/theme/components/home/HomeSections.vue'
 </script>
 
-<div class="cf-page cf-page--wide">
+<div class="cf-page cf-home">
   <HomeHero />
   <HomeSections />
 </div>
+
+<style scoped>
+.cf-home { max-width: clamp(var(--cf-container), 78vw, 100rem); }
+</style>

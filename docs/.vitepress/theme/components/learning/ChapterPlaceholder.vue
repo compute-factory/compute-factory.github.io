@@ -9,7 +9,7 @@ const chapter = computed(() => findChapterByPath(route.path))
 
 <template>
   <article v-if="chapter" class="chapter-page">
-    <h1 class="chapter-title">{{ chapter.title }}</h1>
+    <h1 class="chapter-title"><SectionMark />{{ chapter.title }}</h1>
 
     <!-- 计划小节渲染成二级标题（带 id），左侧本页目录才能列出它们，和正文写好后的结构一致 -->
     <h2 v-for="(item, index) in chapter.items" :id="`section-${index + 1}`" :key="item" class="outline-item">

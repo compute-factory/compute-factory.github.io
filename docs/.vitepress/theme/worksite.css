@@ -276,6 +276,140 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+/* 内页的标题图标按教程、论文和资料分色。 */
+:root {
+  --cf-blue: #3c5e95;
+  --cf-sky: #eaf0fc;
+  --cf-green: #286b56;
+  --cf-mint: #e3f2e9;
+}
+.dark {
+  --cf-blue: #aacaff;
+  --cf-sky: #252f42;
+  --cf-green: #95d6b6;
+  --cf-mint: #20392e;
+}
+
+.Layout { --cf-section-ink: var(--cf-gold); --cf-section-tint: var(--cf-warm); }
+.Layout[data-section="papers"] { --cf-section-ink: var(--cf-blue); --cf-section-tint: var(--cf-sky); }
+.Layout[data-section="resources"] { --cf-section-ink: var(--cf-green); --cf-section-tint: var(--cf-mint); }
+
+.cf-nav-label { display: inline-flex; align-items: center; gap: 0.42rem; vertical-align: middle; }
+.cf-nav-label svg { flex: none; }
+.VPNavBarMenuLink.active .cf-nav-label { box-shadow: inset 0 -2px var(--cf-amber); }
+
+.cf-overview { padding-block: clamp(1.15rem, 2.3vw, 2.25rem) 4rem; }
+.cf-section-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  padding: clamp(1.05rem, 2.5vw, 2rem);
+  border: 1px solid var(--cf-border);
+  border-radius: 1rem;
+  background: linear-gradient(105deg, var(--cf-surface) 25%, var(--cf-section-tint));
+}
+.cf-section-header::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--cf-section-ink) 23%, transparent) 1px, transparent 1px);
+  background-size: 12px 12px;
+  mask-image: linear-gradient(90deg, transparent 34%, black);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cf-section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 35%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cf-section-ink), transparent);
+    animation: section-sheen 1.7s ease-out both;
+  }
+  @keyframes section-sheen {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(300%); }
+  }
+}
+
+.cf-section-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: clamp(1.55rem, 3vw, 2.5rem);
+  line-height: 1.3;
+  font-weight: 780;
+  letter-spacing: -0.035em;
+}
+.cf-section-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.48em;
+  height: 1.48em;
+  border: 1px solid color-mix(in srgb, var(--cf-section-ink) 20%, transparent);
+  border-radius: 27%;
+  color: var(--cf-section-ink);
+  background: var(--cf-section-tint);
+}
+.cf-section-mark svg { width: 58%; height: 58%; stroke-width: 1.7; }
+.guide-tools .tool-label, .paper-tools .tool-label { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+@media screen {
+  .vp-doc h1:has(> .cf-section-mark) {
+    min-height: 1.48em;
+    padding-inline-start: 1.85em;
+    align-content: center;
+    overflow-wrap: anywhere;
+  }
+  .vp-doc h1 > .cf-section-mark { position: absolute; inset: 0 auto auto 0; }
+  .vp-doc h2:not(.outline-item) {
+    border-image: linear-gradient(90deg, var(--cf-section-ink) 2.2rem, var(--cf-border) 2.2rem) 1;
+  }
+  .Layout[data-section="resources"] .vp-doc table {
+    display: table;
+    width: 100%;
+    border: 1px solid var(--cf-border);
+    border-radius: 0.7rem;
+    border-spacing: 0;
+    border-collapse: separate;
+    overflow: hidden;
+  }
+  .Layout[data-section="resources"] .vp-doc :is(td, th) {
+    padding: 0.7rem 0.9rem;
+    border: 0;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+  .Layout[data-section="resources"] .vp-doc td { border-top: 1px solid var(--cf-border); }
+  .Layout[data-section="resources"] .vp-doc th { background: var(--cf-mint); color: var(--cf-green); }
+  .Layout[data-section="resources"] .vp-doc td:first-child { width: 38%; }
+}
+
+@media (min-width: 768px) and (max-width: 959px) {
+  .VPNavBar .VPNavBarMenuLink { padding-inline: 0.45rem; }
+}
+
+@media (max-width: 600px) {
+  .cf-section-header h1 { gap: 0.5rem; }
+}
+
+@media screen and (max-width: 600px) {
+  .vp-doc h1:has(> .cf-section-mark) { min-height: 0; padding-inline-start: 0; }
+  .vp-doc h1 > .cf-section-mark {
+    position: static;
+    width: 1.3em;
+    height: 1.3em;
+    margin-inline-end: 0.32em;
+    vertical-align: -0.22em;
+  }
+}
+
+@media print { .cf-section-mark { display: none; } }
+
 /* ── 打印与导出 PDF ─────────────────────────────────────
  * 论文报告的「下载 PDF」由 scripts/build-paper-pdfs.mjs 用无头浏览器
  * 打印页面生成，读者也可以直接 Ctrl+P 存成 PDF。打印稿只保留正文：

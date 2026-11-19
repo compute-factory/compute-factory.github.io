@@ -1,3 +1,5 @@
+import { h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { defineConfig } from 'vitepress'
 import { findChapterByPath } from './content/curriculum'
 import { findPaperByPath } from './content/papers'
@@ -7,7 +9,7 @@ export default defineConfig({
   lang: 'zh-CN',
   title: '算力工地',
   description: '面向新手的中文 AI Infra 学习路线、动手实验与教程索引。',
-  head: [['link', { rel: 'icon', type: 'image/png', href: '/logo.png' }]],
+  head: [['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]],
   // 占位章节不收录，把 curriculum 或 papers 里的 status 改成 published 就会自动放开
   transformHead({ pageData }) {
     const routePath = '/' + pageData.relativePath.replace(/(index)?\.md$/, '')
@@ -16,7 +18,18 @@ export default defineConfig({
     return [['meta', { name: 'robots', content: 'noindex' }]]
   },
   // 公式用 $...$ / $$...$$，构建时渲染成 SVG，不需要额外的前端脚本
-  markdown: { math: true },
+  markdown: {
+    math: true,
+    config(md) {
+      // 只在渲染正文时插入图标，标题锚点、目录和下载稿继续使用原文。
+      const open = md.renderer.rules.heading_open
+      md.renderer.rules.heading_open = (tokens, index, options, env, renderer) => {
+        const tag = open?.(tokens, index, options, env, renderer) ?? renderer.renderToken(tokens, index, options)
+        const isArticle = /^(guide\/|papers\/|resources\.md$)/.test(env.relativePath ?? '')
+        return tokens[index].tag === 'h1' && isArticle ? tag + '<SectionMark />' : tag
+      }
+    },
+  },
   vue: {
     template: {
       compilerOptions: {
@@ -26,10 +39,29 @@ export default defineConfig({
   },
   themeConfig: {
     logo: { src: '/logo.png', alt: '戴安全帽的芯片' },
-    nav: siteNav,
+    nav: await Promise.all(siteNav.map(async ({ icon, text, ...link }) => ({
+      ...link,
+      text: await renderToString(h('span', { class: 'cf-nav-label' }, [
+        h(icon, { size: 17, 'stroke-width': 1.7, 'aria-hidden': 'true' }), text,
+      ])),
+    }))),
     // 不设侧栏：板块切换靠常驻的板块横条，文章内部导航靠左侧的本页目录
     aside: 'left',
-    search: { provider: 'local' },
+    search: {
+      provider: 'local',
+      options: {
+        translations: {
+          button: { buttonText: '搜索', buttonAriaLabel: '搜索站内内容' },
+          modal: {
+            displayDetails: '显示详细内容',
+            resetButtonTitle: '清空搜索',
+            backButtonTitle: '返回',
+            noResultsText: '没有找到相关内容',
+            footer: { selectText: '选择', navigateText: '切换结果', closeText: '关闭' },
+          },
+        },
+      },
+    },
     outline: { label: '本页目录', level: [2, 3] },
     returnToTopLabel: '回到顶部',
     darkModeSwitchLabel: '切换配色',

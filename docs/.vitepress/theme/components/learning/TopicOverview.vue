@@ -5,7 +5,6 @@ import { learningTopics } from '../../../content/learning'
 import { chaptersOf, chapterHref } from '../../../content/curriculum'
 
 const props = defineProps<{ topicId: string }>()
-
 const topicIndex = computed(() => learningTopics.findIndex((topic) => topic.id === props.topicId))
 const topic = computed(() => learningTopics[topicIndex.value])
 const chapters = computed(() =>
@@ -14,17 +13,20 @@ const chapters = computed(() =>
 </script>
 
 <template>
-  <div v-if="topic" class="cf-page topic-page">
-    <h1 class="topic-title">{{ topic.title }}</h1>
+  <div v-if="topic" class="cf-page cf-overview">
+    <header class="cf-section-header">
+      <h1><SectionMark />{{ topic.title }}</h1>
+    </header>
 
-    <ol class="chapter-list">
-      <li v-for="chapter in chapters" :key="chapter.slug" class="chapter-item">
+    <ol class="chapter-list" aria-label="章节目录">
+      <li v-for="chapter in chapters" :key="chapter.slug">
         <a class="chapter-link" :href="withBase(chapterHref(topic.id, chapter.slug))">
           <span class="chapter-number">{{ String(chapter.number).padStart(2, '0') }}</span>
-          <span class="chapter-body">
-            <span class="chapter-title">{{ chapter.title }}</span>
-            <span class="chapter-points">{{ chapter.items.join('、') }}</span>
+          <span class="chapter-title">{{ chapter.title }}</span>
+          <span v-if="chapter.status !== 'published'" class="chapter-status" :data-status="chapter.status">
+            {{ chapter.status === 'planned' ? '规划中' : '编写中' }}
           </span>
+          <span class="chapter-points">{{ chapter.items.join('、') }}</span>
         </a>
       </li>
     </ol>
@@ -32,89 +34,30 @@ const chapters = computed(() =>
 </template>
 
 <style scoped>
-.topic-page {
-  max-width: 80rem;
-  padding-block: 2.5rem 5rem;
-}
-
-.topic-title {
-  margin: 0 0 2rem;
-  font-size: clamp(2.1rem, 3vw, 2.875rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.2;
-  color: var(--cf-ink);
-}
-
-/* ── 章节列表 ───────────────────────────────────────── */
-.chapter-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chapter-item { border-top: 1px solid var(--cf-border); }
-
-.chapter-item:last-child { border-bottom: 1px solid var(--cf-border); }
+.chapter-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; list-style: none; }
 
 .chapter-link {
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr);
-  align-items: baseline;
-  column-gap: 1rem;
-  padding: 1.5rem 0.75rem 1.5rem 0;
-  color: inherit;
-  text-decoration: none;
-  transition: background-color 0.15s;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  gap: 0.7rem 0.8rem;
+  height: 100%;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--cf-border);
+  border-radius: 0.85rem;
+  background: var(--cf-surface);
 }
 
-.chapter-link:hover { background: var(--cf-soft); }
+.chapter-link:is(:hover, :focus-visible) { border-color: var(--cf-gold); background: var(--cf-soft); }
+.chapter-number { align-self: center; color: var(--cf-gold); font: 650 0.9rem/1.5 var(--vp-font-family-mono); }
+.chapter-title { align-self: center; font-size: 1.125rem; font-weight: 700; line-height: 1.5; color: var(--cf-ink); }
+.chapter-status { padding: 0.1rem 0.5rem; border-radius: 0.35rem; color: var(--cf-muted); background: var(--vp-c-default-soft); font-size: 0.8125rem; white-space: nowrap; }
+.chapter-status[data-status="writing"] { color: var(--cf-gold); background: var(--cf-warm); }
+.chapter-points { grid-column: 2 / -1; color: var(--cf-text); font-size: 0.9375rem; line-height: 1.8; }
 
-.chapter-link:focus-visible {
-  outline: 2px solid var(--cf-gold);
-  outline-offset: -2px;
-}
-
-.chapter-number {
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-muted);
-  transition: color 0.15s;
-}
-
-.chapter-link:hover .chapter-number { color: var(--cf-gold); }
-
-.chapter-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-width: 0;
-}
-
-.chapter-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.5;
-  color: var(--cf-ink);
-}
-
-.chapter-link:hover .chapter-title { color: var(--cf-gold); }
-
-.chapter-points {
-  font-size: 0.875rem;
-  line-height: 1.75;
-  color: var(--cf-muted);
-}
-
-@media (max-width: 600px) {
-  .topic-page { padding-block: 1.5rem 3rem; }
-
-  .chapter-link {
-    grid-template-columns: 1.75rem minmax(0, 1fr);
-    column-gap: 0.75rem;
-    padding-block: 1.15rem;
-  }
+@media (max-width: 760px) {
+  .chapter-list { grid-template-columns: 1fr; }
+  .chapter-points { grid-column: 1 / -1; }
 }
 </style>

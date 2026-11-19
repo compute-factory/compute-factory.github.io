@@ -13,6 +13,7 @@
     "verify": "npm run check && npm run build"
   },
   "devDependencies": {
+    "@lucide/vue": "1.76.0",
     "markdown-it-mathjax3": "^4.3.2",
     "vitepress": "1.6.4"
   }
