@@ -1,9 +1,9 @@
 ---
-title: FlashAttention：以分块与在线 Softmax 消除注意力矩阵的显存往返
+title: "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"
 description: 精读 Dao 等人的 FlashAttention 论文（arXiv:2205.14135v2），解析分块、在线 Softmax 换基与反向重算如何把精确注意力的显存占用压到线性并加速训练。
 ---
 
-# FlashAttention：以分块与在线 Softmax 消除注意力矩阵的显存往返
+# FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness {#flashattention-以分块与在线-softmax-消除注意力矩阵的显存往返}
 
 这篇报告精读 Tri Dao 等人的 [*FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*](https://arxiv.org/abs/2205.14135)（[arXiv:2205.14135v2](https://arxiv.org/pdf/2205.14135v2)，2022 年 6 月版）。长序列 Transformer 的核心瓶颈不在自注意力的浮点乘加次数，而在 GPU 高带宽显存与片上存储之间反复搬运 $N\times N$ 的中间矩阵。读完你将掌握三件事：为什么降低浮点运算量的近似注意力往往没有实际加速、在线 Softmax 如何在只看见局部键块时增量维护整行归一化分母、反向传播如何仅凭行统计量重算梯度。文中实验数据与图表全部取自论文 v2 原文，未在其他硬件上重跑基准测试。
 

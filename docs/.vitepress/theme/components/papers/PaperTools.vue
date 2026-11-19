@@ -3,7 +3,7 @@ import { BookOpen, FileText } from '@lucide/vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 import type { Paper } from '../../../content/papers'
-import { arxivAbsUrl, arxivPdfUrl, paperReportHref } from '../../../content/papers'
+import { arxivAbsUrl, arxivPdfUrl, paperDownloadName, paperReportHref } from '../../../content/papers'
 
 const props = defineProps<{ paper: Paper }>()
 
@@ -15,8 +15,6 @@ const absUrl = computed(() => arxivAbsUrl(props.paper))
 const pdfUrl = computed(() => arxivPdfUrl(props.paper))
 const mdHref = computed(() => withBase(paperReportHref(props.paper.slug, 'md')))
 const reportPdfHref = computed(() => withBase(paperReportHref(props.paper.slug, 'pdf')))
-// 用标题冒号前的主体部分做下载文件名，避开过长和带标点的标题
-const fileBase = computed(() => props.paper.title.split(/[：:]/)[0].trim() || props.paper.slug)
 
 function lockScroll(lock: boolean) {
   if (typeof document === 'undefined') return
@@ -53,12 +51,12 @@ onBeforeUnmount(() => {
   <div class="paper-tools">
     <div class="tool-group">
       <span class="tool-label"><FileText :size="15" aria-hidden="true" />精读报告</span>
-      <a class="tool-link" :href="mdHref" :download="`${fileBase}-精读报告.md`">下载 Markdown</a>
+      <a class="tool-link" :href="mdHref" :download="paperDownloadName(paper, 'md')">下载 Markdown</a>
       <a
         v-if="paper.reportPdf"
         class="tool-link"
         :href="reportPdfHref"
-        :download="`${fileBase}-精读报告.pdf`"
+        :download="paperDownloadName(paper, 'pdf')"
       >下载 PDF</a>
     </div>
     <div v-if="pdfUrl || absUrl" class="tool-group">
