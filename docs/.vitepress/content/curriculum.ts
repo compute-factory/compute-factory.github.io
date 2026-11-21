@@ -55,8 +55,8 @@ export const curriculum: Record<string, Chapter[]> = {
     {
       slug: 'python-language',
       title: 'Python 语言基础',
-      summary: '读 PyTorch 源码时绕不开的语法，从装饰器到生成器。',
-      status: 'planned',
+      summary: '从一次模型调用读懂 Python 的参数传递、对象调用、装饰器、生成器与上下文管理器。',
+      status: 'published',
       items: ['函数、参数与作用域', '类、继承与特殊方法', '装饰器与闭包', '迭代器、生成器与上下文管理器'],
     },
     {
