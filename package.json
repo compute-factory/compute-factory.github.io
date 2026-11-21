@@ -9,11 +9,12 @@
     "build": "vitepress build docs",
     "preview": "vitepress preview docs",
     "articles:pdf": "node scripts/build-article-pdfs.mjs",
-    "check": "node scripts/check-assets.mjs",
+    "check": "node scripts/check-assets.mjs && node scripts/check-typography.mjs",
     "verify": "npm run check && npm run build"
   },
   "devDependencies": {
     "@lucide/vue": "1.76.0",
+    "markdown-it-footnote": "^4.0.0",
     "markdown-it-mathjax3": "^4.3.2",
     "vitepress": "1.6.4"
   }

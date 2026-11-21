@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { defineConfig } from 'vitepress'
+import footnote from 'markdown-it-footnote'
 import { findChapterByPath } from './content/curriculum'
 import { findPaperByPath, paperCategories } from './content/papers'
 import { organization, contactEmail, siteNav } from './content/site'
@@ -27,6 +28,8 @@ export default defineConfig({
   markdown: {
     math: true,
     config(md) {
+      // 长文里的名词解释用 [^注] 写在文末，正文只留编号
+      md.use(footnote)
       // 只在渲染正文时插入图标，标题锚点、目录和下载稿继续使用原文。
       const open = md.renderer.rules.heading_open
       md.renderer.rules.heading_open = (tokens, index, options, env, renderer) => {

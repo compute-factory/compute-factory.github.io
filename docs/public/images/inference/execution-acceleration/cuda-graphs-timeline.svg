@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520">
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif; }
+      .title { font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .sec-title { font-size: 15px; font-weight: 700; }
+      .track-label { font-size: 13px; font-weight: 700; fill: #334155; }
+      .k-label { font-size: 11px; font-weight: 700; fill: #ffffff; }
+      .c-label { font-size: 10px; font-weight: 600; fill: #1e293b; }
+      .note { font-size: 12px; fill: #475569; }
+      .badge { font-size: 11px; font-weight: 700; }
+    </style>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706" />
+    </marker>
+  </defs>
+
+  <rect width="960" height="520" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+  <text x="480" y="34" text-anchor="middle" class="title">CUDA Graphs 时间线对比与分段图（Piecewise Graph）机制</text>
+
+  <!-- Panel A: Eager Mode -->
+  <rect x="28" y="52" width="904" height="148" rx="10" fill="#ffffff" stroke="#fecaca" stroke-width="1.5" />
+  <rect x="44" y="64" width="384" height="24" rx="5" fill="#fef2f2" />
+  <text x="54" y="81" class="sec-title" fill="#b91c1c">1. Eager 模式：CPU 逐个下发，GPU 频繁空等</text>
+  <text x="912" y="81" text-anchor="end" class="badge" fill="#dc2626">Kernel 启动开销 &gt; 短算子本身执行时间</text>
+
+  <!-- Tracks -->
+  <text x="46" y="118" class="track-label">CPU 线程</text>
+  <line x1="120" y1="114" x2="910" y2="114" stroke="#cbd5e1" stroke-width="1" />
+  <text x="46" y="168" class="track-label">GPU 流</text>
+  <line x1="120" y1="164" x2="910" y2="164" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- CPU launch blocks -->
+  <rect x="130" y="99" width="110" height="28" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1" />
+  <text x="185" y="117" text-anchor="middle" class="c-label">Launch K1</text>
+
+  <rect x="280" y="99" width="110" height="28" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1" />
+  <text x="335" y="117" text-anchor="middle" class="c-label">Launch K2</text>
+
+  <rect x="430" y="99" width="110" height="28" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1" />
+  <text x="485" y="117" text-anchor="middle" class="c-label">Launch K3</text>
+
+  <rect x="580" y="99" width="110" height="28" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1" />
+  <text x="635" y="117" text-anchor="middle" class="c-label">Launch K4</text>
+
+  <!-- Arrows CPU -> GPU -->
+  <line x1="210" y1="127" x2="225" y2="148" stroke="#64748b" stroke-width="1.2" marker-end="url(#arr-gray)" />
+  <line x1="360" y1="127" x2="375" y2="148" stroke="#64748b" stroke-width="1.2" marker-end="url(#arr-gray)" />
+  <line x1="510" y1="127" x2="525" y2="148" stroke="#64748b" stroke-width="1.2" marker-end="url(#arr-gray)" />
+  <line x1="660" y1="127" x2="675" y2="148" stroke="#64748b" stroke-width="1.2" marker-end="url(#arr-gray)" />
+
+  <!-- GPU execution + bubbles -->
+  <rect x="225" y="150" width="52" height="28" rx="4" fill="#2563eb" />
+  <text x="251" y="168" text-anchor="middle" class="k-label">K1</text>
+
+  <rect x="281" y="150" width="90" height="28" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-dasharray="3,2" />
+  <text x="326" y="168" text-anchor="middle" class="badge" fill="#b91c1c">空闲气泡</text>
+
+  <rect x="375" y="150" width="56" height="28" rx="4" fill="#2563eb" />
+  <text x="403" y="168" text-anchor="middle" class="k-label">K2</text>
+
+  <rect x="435" y="150" width="86" height="28" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-dasharray="3,2" />
+  <text x="478" y="168" text-anchor="middle" class="badge" fill="#b91c1c">空闲气泡</text>
+
+  <rect x="525" y="150" width="48" height="28" rx="4" fill="#2563eb" />
+  <text x="549" y="168" text-anchor="middle" class="k-label">K3</text>
+
+  <rect x="577" y="150" width="94" height="28" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-dasharray="3,2" />
+  <text x="624" y="168" text-anchor="middle" class="badge" fill="#b91c1c">空闲气泡</text>
+
+  <rect x="675" y="150" width="60" height="28" rx="4" fill="#2563eb" />
+  <text x="705" y="168" text-anchor="middle" class="k-label">K4</text>
+
+  <!-- Panel B: CUDA Graph Replay -->
+  <rect x="28" y="214" width="904" height="140" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.5" />
+  <rect x="44" y="226" width="406" height="24" rx="5" fill="#f0fdfa" />
+  <text x="54" y="243" class="sec-title" fill="#0f766e">2. CUDA Graph Replay：一次提交，GPU 连续执行</text>
+  <text x="912" y="243" text-anchor="end" class="badge" fill="#0f766e">Capture 阶段已固定拓扑与显存地址</text>
+
+  <text x="46" y="278" class="track-label">CPU 线程</text>
+  <line x1="120" y1="274" x2="910" y2="274" stroke="#cbd5e1" stroke-width="1" />
+  <text x="46" y="324" class="track-label">GPU 流</text>
+  <line x1="120" y1="320" x2="910" y2="320" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Single CPU Replay call -->
+  <rect x="130" y="259" width="164" height="28" rx="4" fill="#a7f3d0" stroke="#059669" stroke-width="1.2" />
+  <text x="212" y="277" text-anchor="middle" class="c-label">cudaGraphLaunch(graph)</text>
+  <text x="314" y="277" class="note">CPU 提交后即可继续处理下一批调度任务</text>
+
+  <line x1="212" y1="287" x2="230" y2="305" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-gray)" />
+
+  <!-- Packed GPU kernels -->
+  <rect x="225" y="306" width="52" height="28" rx="4" fill="#0d9488" />
+  <text x="251" y="324" text-anchor="middle" class="k-label">K1</text>
+
+  <rect x="279" y="306" width="56" height="28" rx="4" fill="#0d9488" />
+  <text x="307" y="324" text-anchor="middle" class="k-label">K2</text>
+
+  <rect x="337" y="306" width="48" height="28" rx="4" fill="#0d9488" />
+  <text x="361" y="324" text-anchor="middle" class="k-label">K3</text>
+
+  <rect x="387" y="306" width="60" height="28" rx="4" fill="#0d9488" />
+  <text x="417" y="324" text-anchor="middle" class="k-label">K4</text>
+
+  <rect x="462" y="306" width="272" height="28" rx="6" fill="#ecfdf5" stroke="#6ee7b7" />
+  <text x="598" y="324" text-anchor="middle" class="badge" fill="#047857">总耗时大幅缩短，消除中间发射气泡</text>
+
+  <!-- Panel C: Piecewise CUDA Graph -->
+  <rect x="28" y="368" width="904" height="136" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+  <rect x="44" y="380" width="504" height="24" rx="5" fill="#eff6ff" />
+  <text x="54" y="397" class="sec-title" fill="#1d4ed8">3. 推理引擎实践：分段 CUDA Graph（Piecewise）应对动态长度</text>
+  <text x="912" y="397" text-anchor="end" class="badge" fill="#475569">按 Batch 大小分桶捕获（Padding + Bucketing）</text>
+
+  <!-- Piecewise flow boxes -->
+  <rect x="48" y="420" width="182" height="62" rx="8" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5" />
+  <text x="139" y="444" text-anchor="middle" class="badge" fill="#0f766e">Graph Piece 1（静态图）</text>
+  <text x="139" y="465" text-anchor="middle" class="note">RMSNorm + QKV 投影 + RoPE</text>
+
+  <line x1="230" y1="451" x2="262" y2="451" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)" />
+
+  <rect x="266" y="420" width="194" height="62" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5,3" />
+  <text x="363" y="444" text-anchor="middle" class="badge" fill="#b45309">Eager 执行（动态算子）</text>
+  <text x="363" y="465" text-anchor="middle" class="note">PagedAttention（可变序列长度）</text>
+
+  <line x1="460" y1="451" x2="492" y2="451" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)" />
+
+  <rect x="496" y="420" width="212" height="62" rx="8" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5" />
+  <text x="602" y="444" text-anchor="middle" class="badge" fill="#0f766e">Graph Piece 2（静态图）</text>
+  <text x="602" y="465" text-anchor="middle" class="note">O 投影 + Residual + MLP (SwiGLU)</text>
+
+  <line x1="708" y1="451" x2="740" y2="451" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)" />
+
+  <rect x="744" y="420" width="168" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" />
+  <text x="828" y="444" text-anchor="middle" class="badge" fill="#334155">下一层继续循环</text>
+  <text x="828" y="465" text-anchor="middle" class="note">若支持 Full Graph 则整层合一</text>
+</svg>

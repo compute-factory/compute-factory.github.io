@@ -76,6 +76,10 @@
 
 页面排版使用组件内的 scoped CSS。全站颜色、字体和间距基准放在 worksite.css，颜色通过 --cf-* 变量访问，并为深色模式提供对应值。Inter 使用 VitePress 自带字体；中文和等宽字体使用系统字体回退。
 
+字号同样集中在 worksite.css 的 :root：`--cf-font-h1`、`--cf-font-h2`、`--cf-font-h3` 管文章标题，`--cf-font-display` 管板块页大标题，`--cf-font-ui`、`--cf-font-ui-sm`、`--cf-font-caption` 管界面文字，`--cf-font-math-inline` 控制行内公式相对字号。调整字号层级只改这些变量，不要在规则里写死数字。字体栈只允许 `--vp-font-family-base` 与 `--vp-font-family-mono`。
+
+这套规则由 `scripts/check-typography.mjs` 守卫：字体栈必须走变量，worksite.css 的 font-size 必须取 `--cf-font-*`，token 块与打印样式之外不写裸色值。脚本接在 `npm run check` 里，和大小写检查一起在 CI 的 PR 阶段执行。面向 agent 与贡献者的简版规则在根目录 `AGENTS.md`。
+
 首页与教学总览使用 layout: page，普通文章继续使用默认文档布局。新增页面应明确属于哪种布局，避免将文章排版规则覆盖到自定义页面。
 
 导航标签和图标在 content/site.ts 一起配置，config.mts 将它们渲染为桌面和手机菜单共用的标签。文章标题的图标在 Markdown 渲染阶段插入，标题锚点与下载稿仍由原文生成。章节目录从 curriculum.ts 读取发布状态。
