@@ -258,7 +258,7 @@ onBeforeUnmount(() => {
 }
 
 /* 宽屏时放到正文栏右侧的空白里，不占标题和正文的宽度 */
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .paper-tools {
     position: absolute;
     top: 0;
