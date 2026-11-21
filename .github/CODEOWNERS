@@ -1,0 +1,7 @@
+# 样式与字体规范由主题维护者审阅
+docs/.vitepress/theme/** @wsj040303
+
+# 站点配置、构建脚本与发布流程
+docs/.vitepress/config.mts @wsj040303
+scripts/** @wsj040303
+ops/** @wsj040303

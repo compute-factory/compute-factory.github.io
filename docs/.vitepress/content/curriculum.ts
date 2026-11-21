@@ -128,7 +128,7 @@ export const curriculum: Record<string, Chapter[]> = {
       slug: 'execution-acceleration',
       title: '执行与解码加速',
       summary: '不改模型精度，靠算子融合、CUDA Graphs 与投机解码降低延迟。',
-      status: 'planned',
+      status: 'published',
       items: ['Decode 阶段的算力闲置问题', '算子融合：减少显存往返', 'CUDA Graphs：消除 Kernel 启动开销', '投机解码：Draft-then-Verify 机制与加速比边界'],
     },
     {

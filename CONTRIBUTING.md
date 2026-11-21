@@ -69,6 +69,16 @@ npm run preview    # 预览构建产物
 
 **图片**：放在 `docs/public/` 下，用 `/xxx.png` 引用。
 
+## 排版与字体
+
+正文的字体、字号和颜色由主题统一控制，写内容时**不要自己调**。
+
+- 不要用 `<span style="...">` 改字号、颜色或字重。需要强调就写 `**加粗**`；需要背景色就用 `::: tip`、`::: warning` 这类容器。
+- 全站字体栈与字号定义在 `docs/.vitepress/theme/worksite.css` 的 `:root` 里，组件和样式改动一律取变量（`var(--cf-font-*)`、`var(--vp-font-family-*)`、`var(--cf-*)`），不写裸数字和裸十六进制色值。
+- 深色模式、打印/导出 PDF 的样式也由 `worksite.css` 统一处理，正文里不用另外写。
+
+改样式时 `npm run check` 会自动检查这几条，不符合会直接失败并给出文件与行号。完整规则见 [AGENTS.md](AGENTS.md) 的「排版与字体」。
+
 ## 文件放哪里
 
 | 内容 | 位置 |

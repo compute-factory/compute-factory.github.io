@@ -36,6 +36,19 @@
   --vp-button-brand-active-text: #222018;
   --vp-font-family-base: 'Inter', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
   --vp-font-family-mono: 'JetBrains Mono', 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
+
+  /* ── 字号层级 ────────────────────────────────────────
+   * 全站字号只从这里取，不要在别的规则里写死数字。
+   * 规范与检查脚本见 AGENTS.md 的「排版与字体」和 scripts/check-typography.mjs。 */
+  --cf-font-h1: clamp(1.875rem, 2.6vw, 2.375rem); /* 文章页一级标题 */
+  --cf-font-h2: 1.4375rem; /* 文章页二级标题 */
+  --cf-font-h3: 1.125rem; /* 文章页三级标题 */
+  --cf-font-display: clamp(1.55rem, 3vw, 2.5rem); /* 板块页大标题 */
+  --cf-font-ui: 0.9375rem; /* 界面文字：本页目录、折叠块、导航 */
+  --cf-font-ui-sm: 0.875rem; /* 次级界面文字 */
+  --cf-font-caption: 0.75rem; /* 页脚等辅助信息 */
+  --cf-font-math-inline: 0.9em; /* 行内公式相对正文字号 */
+  --cf-amber-hover: #ffda70;
   --vp-c-divider: var(--cf-border);
   --vp-code-lang-color: var(--vp-c-text-2);
 }
@@ -70,7 +83,7 @@
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
-  font-size: clamp(1.875rem, 2.6vw, 2.375rem);
+  font-size: var(--cf-font-h1);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.25;
@@ -79,14 +92,14 @@
 .vp-doc h2 {
   margin-top: 2.75rem;
   border-top-color: var(--cf-border);
-  font-size: 1.4375rem;
+  font-size: var(--cf-font-h2);
   font-weight: 700;
   letter-spacing: -0.015em;
 }
 
 .vp-doc h3 {
   margin-top: 2rem;
-  font-size: 1.125rem;
+  font-size: var(--cf-font-h3);
   font-weight: 700;
 }
 
@@ -116,7 +129,7 @@
 
 /* 折叠块统一使用站点暖米色底与 15px 可读字号；内部算法卡片用白色表面与左金线拉开对比 */
 .vp-doc .custom-block.details {
-  font-size: 0.9375rem;
+  font-size: var(--cf-font-ui);
   line-height: 1.78;
   border-color: var(--cf-border);
   background-color: var(--cf-soft);
@@ -137,7 +150,7 @@
 }
 
 .vp-doc .custom-block.details blockquote > p {
-  font-size: 0.9375rem;
+  font-size: var(--cf-font-ui);
 }
 
 .vp-doc .custom-block.details blockquote ol {
@@ -163,7 +176,7 @@
 
 /* 行内公式微缩至 0.9em 以齐平中文字高，并加左右呼吸间距 */
 .vp-doc mjx-container:not([display='true']) {
-  font-size: 0.9em;
+  font-size: var(--cf-font-math-inline);
   padding-inline: 0.12em;
 }
 
@@ -236,12 +249,12 @@
   padding: 0.65rem 1.2rem;
   border-radius: 0.5rem;
   background: var(--cf-amber);
-  color: #222018;
+  color: var(--vp-button-brand-text);
   font-weight: 700;
   white-space: nowrap;
 }
 
-.cf-button:hover { background: #ffda70; }
+.cf-button:hover { background: var(--cf-amber-hover); }
 
 .cf-anchor { scroll-margin-top: calc(var(--vp-nav-height) + var(--cf-topbar-h, 0px) + 1.5rem); }
 
@@ -260,7 +273,7 @@
   flex-wrap: wrap;
   gap: 0.25rem 1.5rem;
   margin-bottom: 0.4rem;
-  font-size: 0.75rem;
+  font-size: var(--cf-font-caption);
   font-weight: 400;
 }
 
@@ -318,13 +331,13 @@ html { scrollbar-gutter: stable; }
  * 长标题换行并悬挂缩进，行距收紧，不再按 32px 的固定行高撑开。 */
 .VPDocAsideOutline .outline-title {
   margin-bottom: 0.25rem;
-  font-size: 0.9375rem;
+  font-size: var(--cf-font-ui);
   color: var(--cf-ink);
 }
 
 .VPDocAsideOutline .outline-link {
   padding-block: 0.3rem;
-  font-size: 0.9375rem;
+  font-size: var(--cf-font-ui);
   font-weight: 600;
   line-height: 1.5;
   color: var(--cf-ink);
@@ -334,7 +347,7 @@ html { scrollbar-gutter: stable; }
 
 .VPDocAsideOutline .nested .outline-link {
   padding-left: 0.5rem;
-  font-size: 0.875rem;
+  font-size: var(--cf-font-ui-sm);
   font-weight: 400;
   color: var(--cf-muted);
 }
@@ -350,7 +363,7 @@ html { scrollbar-gutter: stable; }
     gap: clamp(1rem, 2.2vw, 2.75rem);
   }
   .VPNavBar .VPNavBarMenuLink {
-    font-size: 0.9375rem;
+    font-size: var(--cf-font-ui);
     font-weight: 500;
     padding-inline: 0.5rem;
   }
@@ -419,7 +432,7 @@ html { scrollbar-gutter: stable; }
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  font-size: clamp(1.55rem, 3vw, 2.5rem);
+  font-size: var(--cf-font-display);
   line-height: 1.3;
   font-weight: 780;
   letter-spacing: -0.035em;

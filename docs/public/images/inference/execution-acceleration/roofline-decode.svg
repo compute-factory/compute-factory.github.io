@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440">
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif; }
+      .title { font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .axis { font-size: 13px; font-weight: 700; fill: #334155; }
+      .tick { font-size: 11px; fill: #64748b; }
+      .label { font-size: 12px; font-weight: 700; }
+      .body { font-size: 12px; fill: #334155; }
+    </style>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed" />
+    </marker>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+    </marker>
+  </defs>
+
+  <rect width="960" height="440" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+  <text x="480" y="34" text-anchor="middle" class="title">Roofline 视角：小 Batch Decode 与大 Batch 的性能边界（H100 FP16）</text>
+
+  <!-- Plot Area: x=95..620, y=75..365 -->
+  <rect x="95" y="70" width="535" height="300" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Region shading -->
+  <!-- Ridge point at x=420, y=115 -->
+  <rect x="95" y="70" width="325" height="300" fill="#fef2f2" opacity="0.45" />
+  <rect x="420" y="70" width="210" height="300" fill="#eff6ff" opacity="0.45" />
+
+  <text x="245" y="94" text-anchor="middle" class="label" fill="#b91c1c">访存受限区（Memory-Bound）</text>
+  <text x="525" y="94" text-anchor="middle" class="label" fill="#1d4ed8">计算受限区（Compute-Bound）</text>
+
+  <!-- Gridlines -->
+  <line x1="95" y1="310" x2="630" y2="310" stroke="#f1f5f9" stroke-width="1" />
+  <line x1="95" y1="245" x2="630" y2="245" stroke="#f1f5f9" stroke-width="1" />
+  <line x1="95" y1="180" x2="630" y2="180" stroke="#f1f5f9" stroke-width="1" />
+  <line x1="95" y1="115" x2="630" y2="115" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3" />
+
+  <!-- Ridge vertical dashed line -->
+  <line x1="420" y1="70" x2="420" y2="370" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5,4" />
+  <text x="420" y="390" text-anchor="middle" class="tick" font-weight="700" fill="#0f172a">脊点 ≈ 295 FLOPs/Byte</text>
+
+  <!-- Axes -->
+  <line x1="95" y1="370" x2="630" y2="370" stroke="#334155" stroke-width="1.8" />
+  <line x1="95" y1="70" x2="95" y2="370" stroke="#334155" stroke-width="1.8" />
+
+  <!-- X-axis labels -->
+  <text x="135" y="390" text-anchor="middle" class="tick">1</text>
+  <text x="235" y="390" text-anchor="middle" class="tick">10</text>
+  <text x="335" y="390" text-anchor="middle" class="tick">100</text>
+  <text x="545" y="390" text-anchor="middle" class="tick">1000+</text>
+  <text x="362" y="418" text-anchor="middle" class="axis">算术强度 Arithmetic Intensity（FLOPs / Byte，对数刻度）</text>
+
+  <!-- Y-axis labels -->
+  <text x="86" y="314" text-anchor="end" class="tick">~3.35</text>
+  <text x="86" y="249" text-anchor="end" class="tick">~33.5</text>
+  <text x="86" y="184" text-anchor="end" class="tick">~335</text>
+  <text x="86" y="119" text-anchor="end" class="tick">989</text>
+  <text x="30" y="220" text-anchor="middle" transform="rotate(-90 30 220)" class="axis">可达算力（TFLOPS）</text>
+
+  <!-- Roofline Curve: Slope from (135, 310) -> (420, 115) -> horizontal (615, 115) -->
+  <!-- Wait: check slope consistency! (420-135)=285 dx, (310-115)=195 dy. At x=205 (dx=70), y = 310 - 70*(195/285) = 262. -->
+  <polyline points="110,327 420,115 615,115" fill="none" stroke="#0f172a" stroke-width="3.2" stroke-linejoin="round" />
+
+  <!-- Slope label -->
+  <text x="336" y="206" text-anchor="middle" transform="rotate(-34 336 206)" class="label" fill="#0f172a">带宽上限斜线：3.35 TB/s</text>
+  <text x="520" y="108" text-anchor="middle" class="label" fill="#0f172a">FP16 算力上限：989 TFLOPS</text>
+
+  <!-- Point 1: Standard Decode Batch=1 -->
+  <circle cx="135" cy="310" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2" />
+  <rect x="148" y="312" width="166" height="44" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+  <text x="231" y="330" text-anchor="middle" class="label" fill="#b91c1c">常规 Decode (B=1)</text>
+  <text x="231" y="347" text-anchor="middle" class="tick" fill="#991b1b">AI ≈ 1，算力利用率 &lt; 0.5%</text>
+
+  <!-- Arrow from Point 1 to Point 2 (Speculative Decoding) -->
+  <path d="M 142 303 Q 170 272 204 263" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arr-purple)" />
+
+  <!-- Point 2: Speculative Decoding (B=1, gamma=4~5) -->
+  <circle cx="212" cy="257" r="7" fill="#7c3aed" stroke="#ffffff" stroke-width="2" />
+  <rect x="108" y="160" width="178" height="46" rx="6" fill="#f5f3ff" stroke="#c4b5fd" />
+  <text x="197" y="179" text-anchor="middle" class="label" fill="#6d28d9">投机解码并行验证</text>
+  <text x="197" y="197" text-anchor="middle" class="tick" fill="#5b21b6">读 1 次权重算多个 Token</text>
+  <line x1="197" y1="206" x2="210" y2="250" stroke="#7c3aed" stroke-width="1.2" />
+
+  <!-- Point 3: Large Batch or Prefill -->
+  <circle cx="515" cy="115" r="7" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+  <rect x="442" y="138" width="174" height="46" rx="6" fill="#eff6ff" stroke="#93c5fd" />
+  <text x="529" y="157" text-anchor="middle" class="label" fill="#1d4ed8">Prefill / 超大 Batch</text>
+  <text x="529" y="175" text-anchor="middle" class="tick" fill="#1e40af">已达算力上限，无空闲算力可借</text>
+  <line x1="515" y1="138" x2="515" y2="123" stroke="#2563eb" stroke-width="1.2" />
+
+  <!-- Right Explanatory Panel -->
+  <rect x="652" y="70" width="280" height="300" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4" />
+  <text x="670" y="98" class="label" font-size="14" fill="#0f172a">关键工程结论</text>
+  <line x1="670" y1="110" x2="914" y2="110" stroke="#e2e8f0" stroke-width="1" />
+
+  <text x="670" y="136" class="label" fill="#0f766e">1. 算子融合（减少 HBM 搬运字节数）</text>
+  <text x="670" y="156" class="body">减少中间张量的 HBM 读写字节数，</text>
+  <text x="670" y="174" class="body">在相同带宽斜线上直接缩短总耗时。</text>
+
+  <text x="670" y="210" class="label" fill="#b45309">2. CUDA Graphs（填补调度空泡）</text>
+  <text x="670" y="230" class="body">消除 Kernel 间 CPU 发射空隙，</text>
+  <text x="670" y="248" class="body">让实际带宽更贴近 3.35 TB/s 理论墙。</text>
+
+  <text x="670" y="284" class="label" fill="#6d28d9">3. 投机解码（沿斜线向右攀升）</text>
+  <text x="670" y="304" class="body">小 Batch 下用闲置算力换多词输出；</text>
+  <text x="670" y="322" class="body">但若 Batch 过大进入蓝色算力平台区，</text>
+  <text x="670" y="340" class="body">验证额外 Token 会直接增加延迟。</text>
+</svg>
