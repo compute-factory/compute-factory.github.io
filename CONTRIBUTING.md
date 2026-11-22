@@ -87,6 +87,7 @@ npm run preview    # 预览构建产物
 | 教程入口与导航 | `docs/.vitepress/content/curriculum.ts` 里对应板块的章节条目 |
 | 参考资料 | `docs/resources.md` |
 | 图片等静态资源 | `docs/public/` |
+| agent 技能 | `skills/<name>/SKILL.md`，并在 `skills/README.md` 索引里登记 |
 
 新增教程**必须同时在 `docs/.vitepress/content/curriculum.ts` 对应板块里加章节条目**——上一篇/下一篇、板块页和教学页的知识图都是从这份数据生成的，漏了这一步，页面能直接访问但站内导航里找不到。
 

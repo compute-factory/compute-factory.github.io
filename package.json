@@ -9,7 +9,7 @@
     "build": "vitepress build docs",
     "preview": "vitepress preview docs",
     "articles:pdf": "node scripts/build-article-pdfs.mjs",
-    "check": "node scripts/check-assets.mjs && node scripts/check-typography.mjs",
+    "check": "node scripts/check-assets.mjs && node scripts/check-typography.mjs && node scripts/check-skills.mjs",
     "verify": "npm run check && npm run build"
   },
   "devDependencies": {
