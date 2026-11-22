@@ -37,6 +37,30 @@ export const papers: Paper[] = [
     arxivId: '2205.14135v2',
     reportPdf: true,
   },
+  {
+    slug: 'llada',
+    title: 'Large Language Diffusion Models',
+    authors: [
+      'Shen Nie',
+      'Fengqi Zhu',
+      'Zebin You',
+      'Xiaolu Zhang',
+      'Jingyang Ou',
+      'Jun Hu',
+      'Jun Zhou',
+      'Yankai Lin',
+      'Ji-Rong Wen',
+      'Chongxuan Li',
+    ],
+    venue: 'NeurIPS 2025',
+    firstPublished: '2025-02-14',
+    firstPublishedVia: 'arXiv',
+    categories: ['模型架构', '推理与服务'],
+    summary: '用掩码扩散取代自回归，从头训练 8B 语言模型并追平同规模自回归基线。',
+    status: 'published',
+    arxivId: '2502.09992v3',
+    reportPdf: true,
+  },
 ]
 
 export function paperHref(slug: string): string {
