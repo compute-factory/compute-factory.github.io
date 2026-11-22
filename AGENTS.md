@@ -8,6 +8,16 @@
 - 内部文档放 `ops/`，脚本放 `scripts/`，两者都不会被构建成页面。
 - 新增文章后跑 `npm run build && npm run articles:pdf && npm run build`，PDF 要随内容一起提交。
 
+## 技能
+
+仓库里的 agent 技能放在 `skills/<name>/`，每个目录的入口是 `SKILL.md`，细则在 `references/`，脚本在 `scripts/`，模板在 `assets/`。索引见 `skills/README.md`。
+
+做任务前先看一眼索引：如果任务正好是某个技能的用途，就先读该技能目录下的 `SKILL.md`，按它的流程走，而不是临场发挥。目前有：
+
+- `skills/paper-reading-report/SKILL.md` —— 把论文、聊天记录与笔记整理成可发布的中文读后报告。遇到「论文精读」「读后报告」「把这篇论文写成文章」，或收到论文 PDF / arXiv 链接时先读它。
+
+新增技能照 `skills/README.md` 的步骤做，`scripts/check-skills.mjs` 会校验目录名、frontmatter 与文件引用。
+
 ## 排版与字体
 
 **全站字体栈与字号只在 `docs/.vitepress/theme/worksite.css` 的 `:root` 里定义，其他文件一律取变量。**

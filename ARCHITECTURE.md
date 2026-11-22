@@ -53,6 +53,9 @@
 | scripts/article-targets.mjs | 扫描可下载文章，约定下载路径，生成教程下载清单 |
 | scripts/sync-article-downloads.mjs | 构建与开发前复制 Markdown 副本，并生成下载清单 |
 | scripts/build-article-pdfs.mjs | 用本机 Chrome/Edge 无头打印文章 PDF（`npm run articles:pdf`） |
+| skills/README.md | agent 技能索引与新增步骤 |
+| skills/&lt;name&gt;/SKILL.md | 单个技能的入口与流程，细则、脚本、模板在同目录 |
+| scripts/check-skills.mjs | 校验技能目录名、frontmatter 与文件引用 |
 | docs/public/logo.png | 站点标志 |
 | .github/workflows/pages.yml | PR 构建检查与 main 自动发布 |
 
