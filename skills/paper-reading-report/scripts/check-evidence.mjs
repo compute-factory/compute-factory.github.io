@@ -343,14 +343,28 @@ function main() {
     }
   })
 
-  // 标题体检：两层分工、层级、问句、空标题、预算
+  // 标题体检：分层分工、层级、问句、空标题、预算
   const headingIssues = []
   let h2Count = 0
   let h3Count = 0
+  let h4Count = 0
+  let h4UnderCurrentH3 = 0
+  let hasH3Parent = false
   let inQA = false
   let headingTotal = 0
   const h2Junk = /^(其他|补充|杂项|附录)$/
   const h3Junk = /^(概述|浅谈|初探|其他|补充|小结|简介|总结|背景介绍|实验设置|实验结果|方法介绍|结果分析)$/
+  // 带 H4 子标题的 H3 是分组层，允许用短的分组名；叶子 H3 才必须写成判断句。
+  const h3WithH4 = new Set()
+  let openH3 = 0
+  originalLines.forEach((line, idx) => {
+    const h = /^(#{1,6})\s+/.exec(line)
+    if (!h) return
+    const level = h[1].length
+    if (level === 3) openH3 = idx + 1
+    else if (level <= 2) openH3 = 0
+    else if (level === 4 && openH3) h3WithH4.add(openH3)
+  })
   originalLines.forEach((line, idx) => {
     const h = /^(#{1,6})\s+(.*)$/.exec(line)
     if (!h) return
@@ -358,15 +372,41 @@ function main() {
     const title = h[2].trim()
     if (level === 1) return
     headingTotal++
-    if (level === 2) { h2Count++; inQA = /答疑/.test(title) }
-    if (level === 3) h3Count++
-    if (level >= 4) headingIssues.push({ line: idx + 1, type: '层级过深', detail: title })
+    if (level === 2) {
+      h2Count++
+      inQA = /答疑/.test(title)
+      hasH3Parent = false
+      h4UnderCurrentH3 = 0
+    }
+    if (level === 3) {
+      h3Count++
+      hasH3Parent = true
+      h4UnderCurrentH3 = 0
+    }
+    if (level === 4) {
+      h4Count++
+      if (!hasH3Parent) {
+        headingIssues.push({ line: idx + 1, type: 'H4 缺少 H3 父级', detail: title })
+      } else {
+        h4UnderCurrentH3++
+        if (h4UnderCurrentH3 > 4) {
+          headingIssues.push({ line: idx + 1, type: 'H4 数量', detail: `${title}（同一 H3 下超过 4 个）` })
+        }
+      }
+    }
+    if (level >= 5) headingIssues.push({ line: idx + 1, type: '层级过深', detail: title })
     if (/[？?]/.test(title) && !inQA) headingIssues.push({ line: idx + 1, type: '问句标题', detail: title })
+    const isGroupH3 = h3WithH4.has(idx + 1)
     if (level === 2 && h2Junk.test(title)) headingIssues.push({ line: idx + 1, type: 'H2 空标题', detail: title })
-    if (level === 3 && h3Junk.test(title)) {
+    if (level === 3 && !isGroupH3 && h3Junk.test(title)) {
       headingIssues.push({ line: idx + 1, type: 'H3 无判断', detail: title })
-    } else if (level === 3 && title.replace(/[\s\w]/g, '').length <= 5 && !/[？?]/.test(title)) {
+    } else if (level === 3 && !isGroupH3 && title.replace(/[\s\w]/g, '').length <= 5 && !/[？?]/.test(title)) {
       headingIssues.push({ line: idx + 1, type: 'H3 过短', detail: `${title}（可能只是话题标签，确认能否写成陈述句）` })
+    }
+    if (level === 4 && h3Junk.test(title)) {
+      headingIssues.push({ line: idx + 1, type: 'H4 无判断', detail: title })
+    } else if (level === 4 && title.replace(/[\s\w]/g, '').length <= 4 && !/[？?]/.test(title)) {
+      headingIssues.push({ line: idx + 1, type: 'H4 过短', detail: `${title}（可能只是话题标签，确认能否写成判断句）` })
     }
     if (level === 2 && title.length > 24) {
       headingIssues.push({ line: idx + 1, type: 'H2 过长', detail: `${title}（${title.length} 字，可能该降为 H3）` })
@@ -378,8 +418,11 @@ function main() {
   if (h3Count > 12) {
     headingIssues.push({ line: 0, type: 'H3 数量', detail: `${h3Count} 个，建议不超过 12 个` })
   }
-  if (headingTotal > 20) {
-    headingIssues.push({ line: 0, type: '标题总数', detail: `${headingTotal} 个，建议不超过 20 个` })
+  if (h4Count > 12) {
+    headingIssues.push({ line: 0, type: 'H4 数量', detail: `${h4Count} 个，建议不超过 12 个` })
+  }
+  if (headingTotal > 24) {
+    headingIssues.push({ line: 0, type: '标题总数', detail: `${headingTotal} 个，建议不超过 24 个` })
   }
 
   // 比喻词：这些词通常意味着在用比喻代替机制
@@ -391,10 +434,10 @@ function main() {
     }
   })
 
-  // 锚点覆盖：h2 统计范围包含其下的 h3（延伸阅读章节除外）
+  // 锚点覆盖：H2 统计范围包含其下的 H3/H4（延伸阅读章节除外）
   const headings = []
   originalLines.forEach((line, idx) => {
-    const h = /^(#{2,3})\s+(.*)$/.exec(line)
+    const h = /^(#{2,4})\s+(.*)$/.exec(line)
     if (h) headings.push({ level: h[1].length, title: h[2].trim(), line: idx + 1 })
   })
   const sections = headings.map((h, i) => {

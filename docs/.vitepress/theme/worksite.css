@@ -43,10 +43,16 @@
   --cf-font-h1: clamp(1.875rem, 2.6vw, 2.375rem); /* 文章页一级标题 */
   --cf-font-h2: 1.4375rem; /* 文章页二级标题 */
   --cf-font-h3: 1.125rem; /* 文章页三级标题 */
+  --cf-font-h4: 1rem; /* 文章页四级标题 */
   --cf-font-display: clamp(1.55rem, 3vw, 2.5rem); /* 板块页大标题 */
   --cf-font-ui: 0.9375rem; /* 界面文字：本页目录、折叠块、导航 */
   --cf-font-ui-sm: 0.875rem; /* 次级界面文字 */
   --cf-font-caption: 0.75rem; /* 页脚等辅助信息 */
+  /* 本页目录：H1–H4 四级依次收窄，颜色由深到浅 */
+  --cf-font-outline-1: 1rem;
+  --cf-font-outline-2: 0.9375rem;
+  --cf-font-outline-3: 0.875rem;
+  --cf-font-outline-4: 0.8125rem;
   --cf-font-math-inline: 0.9em; /* 行内公式相对正文字号 */
   --cf-amber-hover: #ffda70;
   --vp-c-divider: var(--cf-border);
@@ -101,6 +107,14 @@
   margin-top: 2rem;
   font-size: var(--cf-font-h3);
   font-weight: 700;
+}
+
+.vp-doc h4 {
+  margin-top: 1.75rem;
+  font-size: var(--cf-font-h4);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--cf-ink);
 }
 
 .vp-doc p,
@@ -327,8 +341,8 @@ html { scrollbar-gutter: stable; }
 }
 
 /* ── 本页目录 ───────────────────────────────────────────
- * 二级标题是主干：字重大、颜色深；三级标题缩进，字号小、颜色浅。
- * 长标题换行并悬挂缩进，行距收紧，不再按 32px 的固定行高撑开。 */
+ * 目录支持 H1–H4 四级：一级最大最深，往下逐级收窄字号、减字重、
+ * 变浅颜色并增加缩进。长标题换行显示，行距收紧。 */
 .VPDocAsideOutline .outline-title {
   margin-bottom: 0.25rem;
   font-size: var(--cf-font-ui);
@@ -336,18 +350,40 @@ html { scrollbar-gutter: stable; }
 }
 
 .VPDocAsideOutline .outline-link {
-  padding-block: 0.3rem;
-  font-size: var(--cf-font-ui);
-  font-weight: 600;
+  display: block;
+  padding-block: 0.28rem;
   line-height: 1.5;
-  color: var(--cf-ink);
   white-space: normal;
   text-overflow: clip;
 }
 
-.VPDocAsideOutline .nested .outline-link {
-  padding-left: 0.5rem;
-  font-size: var(--cf-font-ui-sm);
+/* H1：文章标题 */
+.VPDocAsideOutline .VPDocOutlineItem.root > li > .outline-link {
+  font-size: var(--cf-font-outline-1);
+  font-weight: 700;
+  color: var(--cf-ink);
+}
+
+/* H2：板块标题，缩进一级 */
+.VPDocAsideOutline .VPDocOutlineItem.root > li > .VPDocOutlineItem.nested > li > .outline-link {
+  padding-left: 0.55rem;
+  font-size: var(--cf-font-outline-2);
+  font-weight: 600;
+  color: var(--cf-ink);
+}
+
+/* H3：判断标题，缩进两级 */
+.VPDocAsideOutline .VPDocOutlineItem.root > li > .VPDocOutlineItem.nested > li > .VPDocOutlineItem.nested > li > .outline-link {
+  padding-left: 1.1rem;
+  font-size: var(--cf-font-outline-3);
+  font-weight: 400;
+  color: var(--cf-text);
+}
+
+/* H4：更细的补充标题，缩进三级 */
+.VPDocAsideOutline .VPDocOutlineItem.root > li > .VPDocOutlineItem.nested > li > .VPDocOutlineItem.nested > li > .VPDocOutlineItem.nested > li > .outline-link {
+  padding-left: 1.65rem;
+  font-size: var(--cf-font-outline-4);
   font-weight: 400;
   color: var(--cf-muted);
 }
