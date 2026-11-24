@@ -129,7 +129,7 @@ export const curriculum: Record<string, Chapter[]> = {
       title: '执行与解码加速',
       summary: '不改模型精度，靠算子融合、CUDA Graphs 与投机解码降低延迟。',
       status: 'published',
-      items: ['Decode 阶段的算力闲置问题', '算子融合：减少显存往返', 'CUDA Graphs：消除 Kernel 启动开销', '投机解码：Draft-then-Verify 机制与加速比边界'],
+      items: ['Prefill 与 Decode 的算术强度对比', 'Kernel 启动开销与算子融合', 'CUDA Graphs 的 Capture、Replay 与推理应用', '投机解码的原理、典型技术与收益边界', 'RTX 5070 环境搭建与性能对比'],
     },
     {
       slug: 'multi-gpu-inference',

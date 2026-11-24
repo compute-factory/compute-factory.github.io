@@ -1,101 +1,103 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+
   <defs>
-    <style>
-      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif; }
-      .title { font-size: 20px; font-weight: 700; fill: #0f172a; }
-      .card-title { font-size: 16px; font-weight: 700; }
-      .body { font-size: 13px; fill: #334155; }
-      .small { font-size: 12px; font-weight: 600; }
-      .tag { font-size: 11px; font-weight: 700; }
-    </style>
-    <marker id="arrow-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <marker id="arr-warm" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8c8270" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
-    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626" />
+    <marker id="arr-red" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
-    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706" />
+    <marker id="arr-teal" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="960" height="520" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
-
-  <!-- Title -->
-  <text x="480" y="36" text-anchor="middle" class="title">LLM Decode 阶段的双侧瓶颈与三类无损加速路径</text>
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+  <text x="52" y="56" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">LLM Inference · Prefill vs Decode</text>
+  <text x="52" y="88" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">Decode 阶段的双侧瓶颈与三条加速路径</text>
 
   <!-- Prefill Card -->
-  <rect x="30" y="58" width="435" height="172" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" />
-  <rect x="30" y="58" width="435" height="36" rx="10" fill="#eff6ff" />
-  <rect x="30" y="84" width="435" height="10" fill="#eff6ff" />
-  <line x1="30" y1="94" x2="465" y2="94" stroke="#bfdbfe" stroke-width="1" />
-  <text x="48" y="81" class="card-title" fill="#1d4ed8">Prefill 阶段：计算受限 (Compute-Bound)</text>
-  <text x="48" y="118" class="body">• 输入规模：单次并行处理 Batch × SeqLen 个 Token</text>
-  <text x="48" y="142" class="body">• 核心算子：大矩阵乘（GEMM），权重参数被高度复用</text>
-  <text x="48" y="166" class="body">• 算术强度：远高于硬件脊点（H100 FP16 约 295 FLOPs/Byte）</text>
-  <rect x="48" y="184" width="248" height="28" rx="6" fill="#dbeafe" />
-  <text x="172" y="203" text-anchor="middle" class="small" fill="#1e40af">Tensor Core 处于饱和计算状态</text>
+  <rect x="52" y="116" width="488" height="196" rx="18" fill="#fffefb" stroke="#bfdbfe" stroke-width="1.5" />
+  <rect x="74" y="132" width="444" height="34" rx="10" fill="#eff6ff" />
+  <text x="296" y="154" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#1d4ed8">Prefill 阶段：计算受限 (Compute-Bound)</text>
+  <text x="76" y="196" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• 并行输入 Batch × SeqLen 个词元</text>
+  <text x="76" y="226" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• 核心算子为大矩阵乘 GEMM，权重参数高度复用</text>
+  <text x="76" y="256" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• 算术强度高于硬件脊点（H100 FP16 约 295 FLOPs/Byte）</text>
+  <rect x="76" y="272" width="244" height="26" rx="8" fill="#dbeafe" />
+  <text x="198" y="290" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#1e40af">Tensor Core 处于饱和计算状态</text>
 
   <!-- Decode Card -->
-  <rect x="495" y="58" width="435" height="172" rx="10" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" />
-  <rect x="495" y="58" width="435" height="36" rx="10" fill="#fef2f2" />
-  <rect x="495" y="84" width="435" height="10" fill="#fef2f2" />
-  <line x1="495" y1="94" x2="930" y2="94" stroke="#fecaca" stroke-width="1" />
-  <text x="513" y="81" class="card-title" fill="#b91c1c">Decode 阶段：双侧瓶颈导致算力闲置</text>
-  <text x="513" y="118" class="body">• 输入规模：每步仅处理 Batch × 1 个新生成 Token</text>
-  <text x="513" y="142" class="body">• GPU 侧瓶颈：权重与 KV Cache 读写多，受限于 HBM 带宽</text>
-  <text x="513" y="166" class="body">• CPU 侧瓶颈：算子碎片化，大量微秒级 Kernel 发射产生空泡</text>
-  <rect x="513" y="184" width="276" height="28" rx="6" fill="#fee2e2" />
-  <text x="651" y="203" text-anchor="middle" class="small" fill="#991b1b">计算单元在等待数据与调度中空转</text>
+  <rect x="580" y="116" width="488" height="196" rx="18" fill="#fffefb" stroke="#fecaca" stroke-width="1.5" />
+  <rect x="602" y="132" width="444" height="34" rx="10" fill="#fef2f2" />
+  <text x="824" y="154" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#b91c1c">Decode 阶段：双侧瓶颈导致算力闲置</text>
+  <text x="604" y="196" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• 每步仅输入 1 个新词元（线性层退化为 GEMV）</text>
+  <text x="604" y="226" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• GPU 侧：权重与 KV Cache 读写多，受限于 HBM 带宽</text>
+  <text x="604" y="256" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="400" fill="#4a453b">• CPU 侧：算子碎片化，微秒级 Kernel 发射产生空泡</text>
+  <rect x="604" y="272" width="268" height="26" rx="8" fill="#fee2e2" />
+  <text x="738" y="290" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#991b1b">计算单元大量周期处于等待状态</text>
 
-  <!-- Connecting Arrows -->
-  <!-- From GPU memory bottleneck to Card 1 (Fusion) and Card 3 (Speculative) -->
-  <path d="M 600 230 L 600 256 L 173 256 L 173 282" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-red)" />
-  <path d="M 712 230 L 712 256 L 787 256 L 787 282" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrow-red)" />
-  <!-- From CPU launch overhead to Card 2 (CUDA Graphs) -->
-  <path d="M 550 230 L 550 268 L 480 268 L 480 282" fill="none" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrow-amber)" />
+  <!-- Smooth Curved Connectors from Decode Card to Bottom 3 Cards -->
+  <path d="M 598 312 C 598 324, 211 316, 211 368" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+  <path d="M 800 312 C 800 344, 560 332, 560 368" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+  <path d="M 909 312 C 909 338, 909 342, 909 368" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-purple)" />
 
-  <rect x="285" y="244" width="166" height="22" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" />
-  <text x="368" y="259" text-anchor="middle" class="tag" fill="#b91c1c">应对 GPU 访存墙</text>
+  <rect x="330" y="317" width="148" height="24" rx="7" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1" />
+  <text x="404" y="333" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="700" fill="#0f766e">减少 HBM 读写往返</text>
 
-  <rect x="720" y="244" width="174" height="22" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" />
-  <text x="807" y="259" text-anchor="middle" class="tag" fill="#b91c1c">提高单步算术强度</text>
+  <rect x="616" y="331" width="144" height="24" rx="7" fill="#fffbeb" stroke="#fde68a" stroke-width="1" />
+  <text x="688" y="347" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="700" fill="#b45309">消除 CPU 发射间隙</text>
 
-  <!-- Bottom Cards -->
-  <!-- Card 1: Operator Fusion -->
-  <rect x="30" y="290" width="286" height="202" rx="10" fill="#ffffff" stroke="#0d9488" stroke-width="1.5" />
-  <rect x="46" y="304" width="132" height="22" rx="5" fill="#ccfbf1" />
-  <text x="112" y="319" text-anchor="middle" class="tag" fill="#0f766e">方向一：减少显存往返</text>
-  <text x="46" y="350" class="card-title" fill="#0f766e">算子融合</text>
-  <text x="46" y="370" class="small" fill="#64748b">Operator Fusion</text>
-  <line x1="46" y1="382" x2="300" y2="382" stroke="#e2e8f0" stroke-width="1" />
-  <text x="46" y="405" class="body">• 相邻算子合并为单个 Kernel</text>
-  <text x="46" y="429" class="body">• 中间结果驻留寄存器与 SRAM</text>
-  <text x="46" y="453" class="body">• 省去中间张量 HBM 读写往返</text>
-  <text x="46" y="477" class="small" fill="#0f766e">→ 降低带宽占用与启动次数</text>
+  <rect x="836" y="327" width="146" height="24" rx="7" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1" />
+  <text x="909" y="343" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="700" fill="#6d28d9">提高单步算术强度</text>
 
-  <!-- Card 2: CUDA Graphs -->
-  <rect x="337" y="290" width="286" height="202" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5" />
-  <rect x="353" y="304" width="132" height="22" rx="5" fill="#fef3c7" />
-  <text x="419" y="319" text-anchor="middle" class="tag" fill="#b45309">方向二：消除发射空泡</text>
-  <text x="353" y="350" class="card-title" fill="#b45309">CUDA Graphs</text>
-  <text x="353" y="370" class="small" fill="#64748b">Graph Capture &amp; Replay</text>
-  <line x1="353" y1="382" x2="607" y2="382" stroke="#e2e8f0" stroke-width="1" />
-  <text x="353" y="405" class="body">• 预先录制整段计算图与地址</text>
-  <text x="353" y="429" class="body">• 推理时 CPU 只需单次 Replay</text>
-  <text x="353" y="453" class="body">• 消除层间上百次 Launch 开销</text>
-  <text x="353" y="477" class="small" fill="#b45309">→ 消除 CPU 调度导致的 GPU 气泡</text>
+  <!-- Bottom Card 1: Operator Fusion -->
+  <rect x="52" y="374" width="318" height="202" rx="18" fill="#fffefb" stroke="#99f6e4" stroke-width="1.5" />
+  <rect x="74" y="392" width="128" height="26" rx="8" fill="#f0fdfa" />
+  <text x="138" y="410" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#0f766e">方向一：算子融合</text>
+  <text x="74" y="446" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700" fill="#222018">Operator Fusion</text>
+  <line x1="74" y1="460" x2="348" y2="460" stroke="#ebe3d0" stroke-width="1.2" />
+  <text x="74" y="486" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 相邻算子合并为单个 Kernel</text>
+  <text x="74" y="512" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 中间结果驻留寄存器与片上 SRAM</text>
+  <text x="74" y="538" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 省去中间张量 HBM 写回与重读</text>
+  <text x="74" y="562" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#0f766e">→ 直接降低显存带宽流量</text>
 
-  <!-- Card 3: Speculative Decoding -->
-  <rect x="644" y="290" width="286" height="202" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5" />
-  <rect x="660" y="304" width="132" height="22" rx="5" fill="#ede9fe" />
-  <text x="726" y="319" text-anchor="middle" class="tag" fill="#6d28d9">方向三：提升计算并行度</text>
-  <text x="660" y="350" class="card-title" fill="#6d28d9">投机解码</text>
-  <text x="660" y="370" class="small" fill="#64748b">Speculative Decoding</text>
-  <line x1="660" y1="382" x2="914" y2="382" stroke="#e2e8f0" stroke-width="1" />
-  <text x="660" y="405" class="body">• 草稿模型先生成 γ 个候选词</text>
-  <text x="660" y="429" class="body">• 目标模型单步并行验证全部候选</text>
-  <text x="660" y="453" class="body">• 拒绝采样保障分布数学等价</text>
-  <text x="660" y="477" class="small" fill="#6d28d9">→ 一次读权重产出多个等价 Token</text>
+  <!-- Bottom Card 2: CUDA Graphs -->
+  <rect x="401" y="374" width="318" height="202" rx="18" fill="#fffefb" stroke="#fde68a" stroke-width="1.5" />
+  <rect x="423" y="392" width="142" height="26" rx="8" fill="#fffbeb" />
+  <text x="494" y="410" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#b45309">方向二：CUDA Graphs</text>
+  <text x="423" y="446" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700" fill="#222018">Capture &amp; Replay</text>
+  <line x1="423" y1="460" x2="697" y2="460" stroke="#ebe3d0" stroke-width="1.2" />
+  <text x="423" y="486" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 预先捕获整段计算图与固定地址</text>
+  <text x="423" y="512" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 推理时 CPU 只需单次 Replay 提交</text>
+  <text x="423" y="538" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 分桶填充与分段图兼容动态长度</text>
+  <text x="423" y="562" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#b45309">→ 消除层间数百次调度空泡</text>
+
+  <!-- Bottom Card 3: Speculative Decoding -->
+  <rect x="750" y="374" width="318" height="202" rx="18" fill="#fffefb" stroke="#ddd6fe" stroke-width="1.5" />
+  <rect x="772" y="392" width="128" height="26" rx="8" fill="#f5f3ff" />
+  <text x="836" y="410" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#6d28d9">方向三：投机解码</text>
+  <text x="772" y="446" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700" fill="#222018">Speculative Decoding</text>
+  <line x1="772" y1="460" x2="1046" y2="460" stroke="#ebe3d0" stroke-width="1.2" />
+  <text x="772" y="486" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 轻量草稿连续猜想 γ 个候选词元</text>
+  <text x="772" y="512" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 目标模型单次前向并行验证全部</text>
+  <text x="772" y="538" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">• 逐位拒绝采样保障分布严格等价</text>
+  <text x="772" y="562" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#6d28d9">→ 一次读权重产出多个等价词元</text>
+
 </svg>
