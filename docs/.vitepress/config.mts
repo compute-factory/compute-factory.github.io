@@ -71,7 +71,7 @@ export default defineConfig({
         },
       },
     },
-    outline: { label: '本页目录', level: [2, 3] },
+    outline: { label: '本页目录', level: [1, 4] },
     returnToTopLabel: '回到顶部',
     darkModeSwitchLabel: '切换配色',
     footer: {

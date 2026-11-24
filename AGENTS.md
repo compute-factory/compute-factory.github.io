@@ -23,7 +23,8 @@
 **全站字体栈与字号只在 `docs/.vitepress/theme/worksite.css` 的 `:root` 里定义，其他文件一律取变量。**
 
 - 字体栈：`var(--vp-font-family-base)`（正文）、`var(--vp-font-family-mono)`（代码与编号）。不要写新的 `font-family` 列表。
-- 字号：`var(--cf-font-h1)`、`--cf-font-h2`、`--cf-font-h3`、`--cf-font-display`、`--cf-font-ui`、`--cf-font-ui-sm`、`--cf-font-caption`、`--cf-font-math-inline`。需要新层级时先加 token，再使用。
+- 字号：`var(--cf-font-h1)`、`--cf-font-h2`、`--cf-font-h3`、`--cf-font-h4`、`--cf-font-display`、`--cf-font-ui`、`--cf-font-ui-sm`、`--cf-font-caption`、`--cf-font-math-inline`，本页目录另有 `--cf-font-outline-1` 到 `--cf-font-outline-4`。需要新层级时先加 token，再使用。
+- 标题最多到 H4；H1–H4 都会出现在本页目录，H5 及更深不收录。
 - 颜色：`var(--cf-ink)`、`--cf-text`、`--cf-muted`、`--cf-surface`、`--cf-soft`、`--cf-warm`、`--cf-amber`、`--cf-gold`、`--cf-border`。不要写裸十六进制色值。
 - 正文里不要用 `<span style="...">` 改字号、颜色或字重。强调用 `**加粗**` 或 `::: tip` 之类的容器。
 - 行内公式字号由主题统一缩放到 `--cf-font-math-inline`（0.9em），不要单独调。
