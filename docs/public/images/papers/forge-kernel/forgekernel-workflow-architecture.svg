@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 656" width="1140" height="656" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-indigo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#6366F1"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#D97706"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <filter id="sh" x="-2%" y="-2%" width="104%" height="106%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1140" height="656" rx="12" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="570" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#0F172A">ForgeKernel 核心工作流：双智能体解耦、探针知识沉淀与跨轮自进化</text>
+
+  <!-- ==================== TOP BAR: Inputs & Sealed Ref ==================== -->
+  <rect x="28" y="78" width="320" height="84" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.3" filter="url(#sh)"/>
+  <text x="188" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#1E293B">1. 优化任务输入</text>
+  <text x="188" y="124" text-anchor="middle" font-size="11.5" fill="#475569">算子数学定义 · 目标输入形状 · 硬件平台</text>
+  <text x="188" y="143" text-anchor="middle" font-size="11" fill="#64748B">独立生成正确性裁判并完成容差校准</text>
+
+  <line x1="348" y1="120" x2="394" y2="120" stroke="#475569" stroke-width="1.8" marker-end="url(#arr-slate)"/>
+
+  <rect x="400" y="78" width="340" height="84" rx="10" fill="#FFFBEB" stroke="#D97706" stroke-width="1.4" filter="url(#sh)"/>
+  <text x="570" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#92400E">2. 封存参考（无参考时先从零生成基线）</text>
+  <text x="570" y="124" text-anchor="middle" font-size="11.5" fill="#78350F">开放：GPU 运行计时 · NCU 剖析 · SASS 反汇编</text>
+  <text x="570" y="143" text-anchor="middle" font-size="11.5" font-weight="600" fill="#B45309">屏蔽：参考源码文本（防止直接抄袭或沿用旧结构）</text>
+
+  <rect x="792" y="78" width="300" height="84" rx="10" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.4" filter="url(#sh)"/>
+  <text x="942" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#1E3A8A">硬件知识库（按 GPU 架构隔离）</text>
+  <text x="942" y="124" text-anchor="middle" font-size="11.5" fill="#1E40AF">仅存算子无关的硬件机制、触发症状与限制</text>
+  <text x="942" y="143" text-anchor="middle" font-size="11" font-weight="600" fill="#2563EB">准入红线：须先通过目标 GPU 独立探针实测</text>
+
+  <!-- Arrow down from Sealed Ref to Arch Agent (lane y=184) -->
+  <path d="M 570 162 L 570 184 L 220 184 L 220 222" fill="none" stroke="#6366F1" stroke-width="1.8" marker-end="url(#arr-indigo)"/>
+  <rect x="330" y="174" width="144" height="19" rx="4" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="0.7"/>
+  <text x="402" y="187.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4338CA">参考硬件行为观测证据</text>
+
+  <!-- Arrow from KB to Arch Agent (lane y=206, separate from y=184!) -->
+  <path d="M 942 162 L 942 206 L 370 206 L 370 222" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+  <rect x="646" y="196" width="148" height="19" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="0.7"/>
+  <text x="720" y="209.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1D4ED8">检索并引用已认证机制</text>
+
+  <!-- ==================== MIDDLE LEFT: Architecture Agent ==================== -->
+  <rect x="28" y="228" width="468" height="286" rx="12" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+  <text x="48" y="254" font-size="14" font-weight="700" fill="#4C1D95">外环：架构智能体（负责结构规划与停滞重设计）</text>
+
+  <rect x="48" y="272" width="428" height="96" rx="8" fill="#FFFFFF" stroke="#A78BFA" stroke-width="1.2" filter="url(#sh)"/>
+  <text x="262" y="295" text-anchor="middle" font-size="12.5" font-weight="700" fill="#4C1D95">参考剖析与里程碑制定（只写决策契约，不写实现代码）</text>
+  <text x="262" y="316" text-anchor="middle" font-size="11.5" fill="#334155">• M0（结构骨架）：确定并行划分、数据流向、分块大小与异步排程</text>
+  <text x="262" y="336" text-anchor="middle" font-size="11.5" fill="#334155">• M1 → Mk（递进调优）：逐项设定预期收益、依赖顺序与机制验收条件</text>
+  <text x="262" y="356" text-anchor="middle" font-size="10.5" fill="#6D28D9">注：M0 只求结构完整与正确，不设绝对速度门槛</text>
+
+  <rect x="48" y="388" width="428" height="108" rx="8" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2" filter="url(#sh)"/>
+  <text x="262" y="411" text-anchor="middle" font-size="12.5" font-weight="700" fill="#4C1D95">运行内诊断与修订（单轮停滞时介入）</text>
+  <text x="262" y="432" text-anchor="middle" font-size="11.5" fill="#334155">1. 若编码端卡在某项硬件用法 → 编写独立 GPU 探针验证后写入知识库</text>
+  <text x="262" y="452" text-anchor="middle" font-size="11.5" fill="#334155">2. 若当前架构触顶 → 修订里程碑，必要时推翻并重开 M0 结构决策</text>
+  <text x="262" y="472" text-anchor="middle" font-size="11" fill="#64748B">修订后若无实质提速则自动撤销，避免无效重构</text>
+
+  <!-- ==================== MIDDLE RIGHT: Coding Agent ==================== -->
+  <rect x="614" y="228" width="478" height="286" rx="12" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+  <text x="634" y="254" font-size="14" font-weight="700" fill="#065F46">内环：编码智能体与框架门禁（隔离源码、按步落地）</text>
+
+  <rect x="634" y="272" width="438" height="104" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.2" filter="url(#sh)"/>
+  <text x="853" y="295" text-anchor="middle" font-size="12.5" font-weight="700" fill="#065F46">按里程碑逐步实现内核（完全不可见参考源码）</text>
+  <text x="853" y="316" text-anchor="middle" font-size="11.5" fill="#334155">• 遵循依赖顺序每次落实一项决策，可调用知识库中的示例写法</text>
+  <text x="853" y="336" text-anchor="middle" font-size="11.5" fill="#334155">• 执行框架禁止联网，且严禁候选内核直接调用或委托参考实现</text>
+  <text x="853" y="356" text-anchor="middle" font-size="11" fill="#047857">• 支持先用小型局部探针验证硬件用法，通过后再合入完整内核</text>
+
+  <rect x="634" y="392" width="438" height="104" rx="8" fill="#FFFFFF" stroke="#059669" stroke-width="1.2" filter="url(#sh)"/>
+  <text x="853" y="415" text-anchor="middle" font-size="12.5" font-weight="700" fill="#065F46">同作业冷 L2 配对测速与门禁判决</text>
+  <text x="853" y="436" text-anchor="middle" font-size="11.5" fill="#334155">• 正确性验证 + 同一 GPU 作业内与参考配对计时 + 机制特征检查</text>
+  <text x="853" y="456" text-anchor="middle" font-size="11.5" fill="#166534" font-weight="600">• 正确性通过即保留（允许短期降速作脚手架）；失败则立即回滚</text>
+  <text x="853" y="476" text-anchor="middle" font-size="11" fill="#475569">• 越过本里程碑门禁后推进下一阶段；连续受阻或停滞则退回外环</text>
+
+  <!-- ==================== ARROWS BETWEEN OUTER & INNER ==================== -->
+  <!-- Milestone plan: Arch -> Coding -->
+  <path d="M 496 320 L 606 320" fill="none" stroke="#6366F1" stroke-width="2" marker-end="url(#arr-indigo)"/>
+  <rect x="514" y="295" width="84" height="20" rx="4" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="0.8"/>
+  <text x="556" y="309" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4338CA">里程碑计划</text>
+
+  <!-- Revised plan: Arch -> Coding -->
+  <path d="M 496 418 L 606 418" fill="none" stroke="#6366F1" stroke-width="2" marker-end="url(#arr-indigo)"/>
+  <rect x="510" y="393" width="92" height="20" rx="4" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="0.8"/>
+  <text x="556" y="407" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4338CA">修订计划/知识</text>
+
+  <!-- Feedback: Coding -> Arch -->
+  <path d="M 614 470 L 502 470" fill="none" stroke="#E11D48" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-rose)"/>
+  <rect x="512" y="476" width="88" height="20" rx="4" fill="#FFF1F2" stroke="#FECDD3" stroke-width="0.8"/>
+  <text x="556" y="490" text-anchor="middle" font-size="10.5" font-weight="700" fill="#BE123C">轨迹与停滞反馈</text>
+
+  <!-- ==================== BOTTOM: Shipped & Self-Evolution ==================== -->
+  <path d="M 853 514 L 853 548" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+  <rect x="863" y="520" width="128" height="19" rx="4" fill="#ECFDF5"/>
+  <text x="927" y="534" text-anchor="middle" font-size="10.5" font-weight="600" fill="#065F46">通过验收并复测确认</text>
+
+  <rect x="614" y="554" width="478" height="78" rx="10" fill="#FFFBEB" stroke="#D97706" stroke-width="1.4" filter="url(#sh)"/>
+  <text x="853" y="579" text-anchor="middle" font-size="13" font-weight="700" fill="#92400E">3. 交付最优内核并触发跨代自进化</text>
+  <text x="853" y="600" text-anchor="middle" font-size="11.5" fill="#78350F">将本代胜出内核封存为下一轮新参考，设定更高目标（如再提速 5%）</text>
+  <text x="853" y="619" text-anchor="middle" font-size="11" font-weight="600" fill="#B45309">停机条件：当单轮净增益落入测量噪声阈值内，或总预算耗尽</text>
+
+  <!-- Left bottom box: Cross-run KB harvest summary -->
+  <rect x="28" y="554" width="468" height="78" rx="10" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.3" filter="url(#sh)"/>
+  <text x="262" y="579" text-anchor="middle" font-size="13" font-weight="700" fill="#1E3A8A">跨运行积累的资产（不止留下一个内核）</text>
+  <text x="262" y="600" text-anchor="middle" font-size="11.5" fill="#1E40AF">1. 可持续接力的参考基线：每代站在上一代肩膀上重新规划架构</text>
+  <text x="262" y="619" text-anchor="middle" font-size="11.5" fill="#1E40AF">2. 跨算子硬件知识库：经探针验证的底层机制供后续算子直接复用</text>
+
+  <!-- Orange Self-Evolution Promotion Arrow cleanly routed in y=54 corridor (below title y=30, above boxes y=78) -->
+  <path d="M 1092 593 L 1114 593 L 1114 54 L 570 54 L 570 72" fill="none" stroke="#D97706" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arr-amber)"/>
+  <rect x="748" y="44" width="234" height="20" rx="4" fill="#FFFBEB" stroke="#FCD34D" stroke-width="0.8"/>
+  <text x="865" y="58" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400E">封存晋升为下一轮参考（Cross-run）</text>
+</svg>
