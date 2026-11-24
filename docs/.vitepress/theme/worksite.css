@@ -55,6 +55,10 @@
   --cf-font-outline-4: 0.8125rem;
   --cf-font-math-inline: 0.9em; /* 行内公式相对正文字号 */
   --cf-amber-hover: #ffda70;
+  /* 代码块左上角的窗口按钮 */
+  --cf-code-dot-red: #ff5f57;
+  --cf-code-dot-yellow: #febc2e;
+  --cf-code-dot-green: #28c840;
   --vp-c-divider: var(--cf-border);
   --vp-code-lang-color: var(--vp-c-text-2);
 }
@@ -243,6 +247,56 @@
 .vp-doc [class*='language-'] > span.lang {
   font-family: var(--vp-font-family-mono);
   letter-spacing: 0.04em;
+}
+
+/* ── 代码块边框 ─────────────────────────────────────────
+ * 桌面端用圆角外框，左侧留一条暖黄强调条；移动端代码块是全宽
+ * 出血布局，只保留左侧强调条，避免圆角被视口裁掉。 */
+.vp-doc div[class*='language-'],
+.vp-doc .custom-block div[class*='language-'] {
+  border-left: 4px solid var(--cf-amber);
+}
+
+@media (min-width: 640px) {
+  .vp-doc div[class*='language-'],
+  .vp-doc .custom-block div[class*='language-'] {
+    border: 1px solid var(--cf-border);
+    border-left: 4px solid var(--cf-amber);
+    border-radius: 0.75rem;
+  }
+}
+
+/* 代码块左上角的窗口按钮：红黄绿三点，用 box-shadow 画后两枚 */
+.vp-doc div[class*='language-']::before {
+  content: '';
+  position: absolute;
+  z-index: 4;
+  top: 14px;
+  left: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cf-code-dot-red);
+  box-shadow: 18px 0 0 var(--cf-code-dot-yellow), 36px 0 0 var(--cf-code-dot-green);
+  pointer-events: none;
+}
+
+/* 给窗口按钮让出顶部空间，行号与代码首行保持同一基线 */
+.vp-doc [class*='language-'] pre {
+  padding-top: 44px;
+}
+
+.vp-doc div[class*='language-'].line-numbers-mode {
+  padding-left: 3.5rem;
+}
+
+.vp-doc .line-numbers-wrapper {
+  top: 44px;
+  bottom: 0;
+  width: 3.5rem;
+  padding-top: 0;
+  border-right-color: var(--cf-border);
+  color: var(--cf-muted);
 }
 
 .cf-page {
