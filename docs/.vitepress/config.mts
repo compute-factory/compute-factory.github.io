@@ -26,6 +26,7 @@ export default defineConfig({
   },
   // 公式用 $...$ / $$...$$，构建时渲染成 SVG，不需要额外的前端脚本
   markdown: {
+    lineNumbers: true,
     math: true,
     config(md) {
       // 长文里的名词解释用 [^注] 写在文末，正文只留编号
