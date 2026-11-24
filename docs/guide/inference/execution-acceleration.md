@@ -1,359 +1,556 @@
 ---
 title: 执行与解码加速
-description: 不改变模型权重与数值精度，通过算子融合、CUDA Graphs 与投机解码消除 Decode 阶段的访存、调度与串行延迟瓶颈。
+description: 在不改变模型权重与数值精度的前提下，拆解 Decode 阶段的算术强度与调度瓶颈，通过算子融合、CUDA Graphs 与投机解码降低生成延迟，并在实机验证并发拐点。
 ---
 
 # 执行与解码加速
 
-在大型语言模型（LLM）的推理优化体系中，很多手段会通过改变数值表示来换取速度，例如将权重量化为 INT8 或 FP8。但在不少线上业务中，团队希望在不改动模型权重、不改变数值精度、甚至保证输出概率分布与原模型严格一致的前提下，把生成延迟压到最低。
+大型语言模型（Large Language Model, LLM）推理在追求低延迟时，除了通过量化压缩数值位数，还有一条不改变模型权重、不损失数值精度、且输出概率分布与原模型严格等价的优化路径：重构算子执行方式与解码调度流程。沿着这条路径定位单卡推理算力闲置的原因，是排查 CPU 调度空泡并决定何时启用投机解码的基础。下文理论推导部分统一采用 FP16 精度下 $4096 \times 4096$ 线性层与中间维度 $14336$ 的前馈层作为贯穿核算示例。
 
-这一类优化统称为**无损执行与解码加速**。在开始拆解具体技术之前，我们先建立对推理两个基本阶段的共识：
+## Decode 阶段的瓶颈诊断
 
-- **Prefill（预填充阶段）**：推理引擎接收用户输入的完整提示词（Prompt），一次性并行计算所有输入 Token 的隐状态并写入 KV Cache[^kv-cache]，最终输出第 1 个生成 Token。该阶段直接决定了 **TTFT**（Time To First Token，首 Token 延迟）。
-- **Decode（解码阶段）**：从生成第 2 个 Token 开始，模型进入自回归循环——每一步只能把上一步刚生成的 1 个 Token 喂回模型，计算并采样下一个 Token，直到遇到结束符或达到最大长度。每生成一个 Token 的平均耗时称为 **TPOT**（Time Per Output Token，单 Token 生成延迟）。
+一次完整的自回归生成分为 **预填充（Prefill）**（并行处理全部输入提示词、写入键值缓存并输出第 1 个词元，决定首词元延迟 TTFT）与 **解码（Decode）**（每步仅将上一步刚产出的 1 个词元输入模型并生成下一个词元，决定单词元生成延迟 TPOT）。在实际部署中，Prefill 阶段往往能把 GPU 计算单元拉满，到了 Decode 阶段算力利用率却骤降至不足 1%。那么，Decode 阶段的瓶颈究竟卡在哪里？
 
-对于长文本生成任务，用户感知的流式输出流畅度主要由 Decode 阶段的 TPOT 决定。然而在实际部署中，工程师往往会发现一个反直觉的现象：Prefill 阶段 GPU 利用率可以拉满，到了 Decode 阶段，GPU 算力利用率却常常跌到不足 1%，计算单元大量周期处于空闲等待状态。
+### Prefill、Decode 的算术强度对比
 
-要理解并解决这一问题，必须先诊断清楚 Decode 阶段到底卡在哪里。
+**Decode 阶段算力闲置的首要原因在于每步只处理 1 个新词元，导致权重矩阵复用率为 1，算术强度远低于硬件脊点并长期受限于显存带宽。**
 
-## Decode 为什么慢：算力闲置与双侧瓶颈
-
-Decode 阶段的低效并非单一原因造成，而是由 **GPU 侧的显存带宽限制** 与 **CPU 侧的核函数发射开销** 共同构成的。
-
-![LLM Decode 阶段的双侧瓶颈与三类无损加速路径](/images/inference/execution-acceleration/decode-bottlenecks.svg)
-
-### GPU 侧瓶颈：算术强度极低导致的算力闲置
-
-衡量一个算子是卡在计算能力还是卡在数据搬运上，在体系结构中通常使用 **算术强度（Arithmetic Intensity，简称 AI）**[^roofline] 来定量刻画：
+衡量算子受限于计算能力还是受限于显存搬运，体系结构中采用 **算术强度（Arithmetic Intensity, AI）** 与 [Roofline 模型](https://jax-ml.github.io/scaling-book/roofline/)。算术强度定义为算子每从片外主显存——即 **高带宽显存（High Bandwidth Memory, HBM）**（紧邻计算芯片封装的大容量堆叠主显存，访问延迟达数百时钟周期）——搬运 1 字节数据所完成的浮点运算次数（Floating Point Operations, FLOPs）：
 
 $$
-\text{AI} = \frac{\text{总浮点运算量（FLOPs）}}{\text{片外显存读写总字节数（Bytes）}}
+\text{AI} = \frac{\text{总浮点运算量（FLOPs）}}{\text{HBM 读写总字节数（Bytes）}} \tag{1}
 $$
 
-这里的“片外显存”指 GPU 主显存，即 **HBM**（High Bandwidth Memory，高带宽显存）[^hbm]。以 NVIDIA H100 SXM5 为例，其 FP16 Tensor Core 稠密算力峰值为 $989\text{ TFLOPS}$，而 HBM3 显存带宽为 $3.35\text{ TB/s}$。两者相除，可以得到这颗芯片在 FP16 精度下的硬件 **脊点（Ridge Point）**：
+![LLM Decode 阶段的双侧瓶颈与三条加速路径](/images/inference/execution-acceleration/decode-bottlenecks.svg)
 
-$$
-\text{Ridge Point} = \frac{989\text{ TFLOPS}}{3.35\text{ TB/s}} \approx 295.2\text{ FLOPs/Byte}
-$$
+*图 1：Prefill 与 Decode 的算术强度与调度特征对照，以及 GPU 访存墙、CPU 发射墙分别对应的三类无损执行优化路径。*
 
-这个数字给出了一个明确的工程判据：在 H100 上，只有当算子每从 HBM 搬运 1 字节数据就能完成至少约 $295$ 次浮点运算时，Tensor Core 才能充分利用算力；低于这个值，计算单元就必须停下来等待 HBM 数据搬运，进入 **访存受限（Memory-Bound）** 状态。
+对照图 1 上半部分，Prefill 阶段一次性并行处理 $B = \text{Batch} \times \text{SeqLen}$ 个 **词元（Token）**，核心计算是 **通用矩阵-矩阵乘法（General Matrix-Matrix Multiplication, GEMM）**；单并发 Decode 阶段（$B = 1$）每步只输入 1 个向量，线性层退化为 **通用矩阵-向量乘法（General Matrix-Vector Multiplication, GEMV）**，同时注意力层还需把历史所有词元的 **键值缓存（KV Cache）** 从显存读出做点积。
 
-我们把模型中最核心的线性层（矩阵乘法）代入公式，对比 Prefill 和 Decode 的算术强度。假设某个 FP16 线性层权重矩阵 $W$ 的形状为 $[D_{\text{in}}, D_{\text{out}}] = [4096, 4096]$（单矩阵占用显存约 $33.55\text{ MB}$），当前步输入的 Token 总数为 $B$：
+以通用数据中心 GPU（例如 H100 SXM5 FP16 峰值 $989\text{ TFLOPS}$、HBM3 带宽 $3.35\text{ TB/s}$）为计算参考，硬件 **脊点（Ridge Point）** 约为 $295.2\text{ FLOPs/Byte}$。代入一块 FP16 线性层权重 $W \in \mathbb{R}^{4096 \times 4096}$（约 $33.55\text{ MB}$）：
 
-- 浮点运算量：$\text{FLOPs} = 2 \cdot B \cdot D_{\text{in}} \cdot D_{\text{out}}$
-- HBM 访存量：需要读取权重 $W$、输入激活 $X$ 并写回输出 $Y$，总字节数为 $\text{Bytes} = 2 D_{\text{in}} D_{\text{out}} + 2 B (D_{\text{in}} + D_{\text{out}})$
+- **Prefill（$B = 1024$）**：权重被 $1024$ 个词元共同复用，算术强度约为 $341.3\text{ FLOPs/Byte}$，越过脊点进入 **计算受限（Compute-Bound）** 区。
+- **单并发 Decode（$B = 1$）**：每搬运 $33.55\text{ MB}$ 权重只服务于 1 个向量乘加，算术强度跌至 <mark>$\approx 1.0\text{ FLOP/Byte}$</mark>，可达算力被带宽锁死在 $3.35\text{ TFLOPS}$，<mark>算力利用率不足 $0.35\%$</mark>。
 
-在 **Prefill 阶段**，假设单条请求输入长度为 $1024$（即 $B = 1024$），该算子属于 **GEMM**（General Matrix-Matrix Multiplication，通用矩阵-矩阵乘法）。此时每一份权重被 $1024$ 个 Token 共同复用，算术强度为：
-
-$$
-\text{AI}_{\text{Prefill}} = \frac{2 \times 1024 \times 4096^2}{2 \times 4096^2 + 2 \times 1024 \times 8192} = \frac{2048}{6} \approx 341.3\text{ FLOPs/Byte} > 295.2
-$$
-
-计算密度已经跨越硬件脊点，进入 **计算受限（Compute-Bound）** 区，Tensor Core 接近满载运行。
-
-在单请求 **Decode 阶段**（$B = 1$），每步只能处理 $1$ 个新 Token，线性层退化为 **GEMV**（General Matrix-Vector Multiplication，通用矩阵-向量乘法）[^gemv]。此时每搬运一整块 $33.55\text{ MB}$ 的权重矩阵，只为这 $1$ 个向量做一次乘加，算术强度骤降为：
-
-$$
-\text{AI}_{\text{Decode}}(B=1) = \frac{2 \times 4096^2}{2 \times 4096^2 + 2 \times 8192} \approx 1.0\text{ FLOP/Byte}
-$$
-
-在 $\text{AI} \approx 1$ 时，H100 上该线性层所能达到的最高算力只有：
-
-$$
-3.35\text{ TB/s} \times 1.0\text{ FLOP/Byte} = 3.35\text{ TFLOPS}
-$$
-
-与 $989\text{ TFLOPS}$ 的峰值相比，算力利用率只有约 **$0.34\%$**。更进一步，Attention 层在 Decode 阶段还需要把整个历史序列的 KV Cache 从 HBM 读出来做点积，进一步加剧了带宽争抢。
+::: details 点击展开：FP16 线性层 Prefill 与 Decode 算术强度分步核算
+1. **符号与访存构成**：设权重矩阵形状为 $[D_{\text{in}}, D_{\text{out}}] = [4096, 4096]$，FP16 每元素占 $2\text{ Bytes}$，当前步输入总词元数为 $B$。总浮点运算量为 $2 \cdot B \cdot D_{\text{in}} \cdot D_{\text{out}}$，总访存包含权重读取 $2 D_{\text{in}} D_{\text{out}}$、输入激活读取 $2 B D_{\text{in}}$ 与输出写回 $2 B D_{\text{out}}$。
+2. **Prefill 阶段（$B = 1024$）**：
+   $$
+   \begin{aligned}
+   \text{AI}_{\text{Prefill}} &= \frac{2 \times 1024 \times 4096^2}{2 \times 4096^2 + 2 \times 1024 \times (4096 + 4096)} &&\text{（代入公式 1 与 FP16 字节数）} \\
+   &= \frac{2048 \times 4096^2}{2 \times 4096^2 + 4 \times 4096^2} &&\text{（化简激活读写项）} \\
+   &= \frac{2048}{6} &&\text{（约去公因子）} \\
+   &\approx 341.3\text{ FLOPs/Byte} &&\text{（高于脊点 295.2，计算受限）}
+   \end{aligned}
+   $$
+3. **Decode 阶段（$B = 1$）**：
+   $$
+   \begin{aligned}
+   \text{AI}_{\text{Decode}} &= \frac{2 \times 1 \times 4096^2}{2 \times 4096^2 + 2 \times 1 \times (4096 + 4096)} &&\text{（单步仅输入 1 个向量）} \\
+   &= \frac{4096}{4096 + 2} &&\text{（约去公因子 8192）} \\
+   &\approx 0.9995\text{ FLOPs/Byte} &&\text{（远低于脊点，访存受限）}
+   \end{aligned}
+   $$
+4. **可达算力对照**：在 $\text{AI} \approx 1.0$ 处，可达算力受 HBM3 带宽上限约束为 $3.35\text{ TB/s} \times 1.0 = 3.35\text{ TFLOPS}$，仅占峰值 $989\text{ TFLOPS}$ 的 $0.339\%$。
+:::
 
 ![Roofline 视角下的 Prefill、Decode 与投机解码定位](/images/inference/execution-acceleration/roofline-decode.svg)
 
-### CPU 侧瓶颈：碎片化算子与 Kernel 启动开销
+*图 2：Roofline 模型视角定位——左侧斜线为 HBM 带宽上限，右侧水平线为 Tensor Core 算力上限。*
 
-除了 GPU 侧的 HBM 带宽墙，Decode 阶段还存在一个在延迟分析中极易被忽视的问题——**CPU 调度延迟**。
+对照图 2 中的三个定位点：常规 Decode（红色圆点 `(1)`）紧贴带宽斜线底部；投机解码（紫色圆点 `(2)`）沿斜线向右上方攀升；Prefill 与超大 Batch（蓝色圆点 `(3)`）则落入计算受限平台区。在实际使用 NVIDIA Nsight Compute 进行性能剖析时，工具会直接绘制出算子在这张图上的真实坐标：
 
-GPU 并不会自己读取模型结构并依次执行计算。在常规的 **Eager 模式**（即时执行模式）[^eager] 下，模型每向前推进一层，CPU 端的 Python 解释器与深度学习框架都要逐一解析张量形状、校验数据类型、分配临时显存，并通过 CUDA Driver/Runtime API 向 GPU 命令队列提交一个 **Kernel**（GPU 核函数）[^kernel]。这个从 CPU 发起调用到 GPU 真正开始执行核函数的过程所需的时间，称为 **Kernel Launch Overhead（核函数启动开销）**。
+![NVIDIA Nsight Compute 官方 Roofline 界面与指标构成](/images/inference/execution-acceleration/nvidia-ncu-roofline.png)
 
-单次 CUDA Kernel 的纯驱动发射开销通常在数微秒（约 $3 \sim 10\text{ }\mu\text{s}$），如果算上 Python 框架侧的调度逻辑，开销可达数十微秒。在 Prefill 阶段，一个大矩阵乘 Kernel 本身要跑几百微秒甚至几毫秒，这几微秒的发射延迟可以忽略不计；但在小 Batch 的 Decode 阶段，一个 Transformer 层内部包含 `RMSNorm`、`QKV Projection`、`RoPE`、`Attention`、`O Projection`、`Residual Add`、`Gate/Up/Down Projection`、`SwiGLU` 等十几个独立算子，其中大量逐元素运算和归一化 Kernel 在 GPU 上的实际计算时间只有 $2 \sim 5\text{ }\mu\text{s}$。
+*图 3：NVIDIA Nsight Compute GPU Speed Of Light（SOL）Roofline 实测视图，横轴为算术强度（FLOP/byte），纵轴为浮点性能（FLOP/s），蓝色折线分别标示 Memory Bandwidth Boundary、Ridge Point 与 Peak Performance Boundary。来源：[NVIDIA Nsight Compute Profiling Guide](https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html)。*
 
-当 CPU 下发速度赶不上 GPU 执行速度时，GPU 计算流上就会出现大量“等指令”的空闲间隙（气泡）。一个拥有 32 到 80 层的模型，单步 Decode 就要经历数百次 Kernel 启动，累积起来的 CPU 调度时间甚至能占到整步延迟的 $30\% \sim 50\%$。
+### Kernel 启动开销
 
-### 三把无损加速钥匙的分工
+**当单个短算子在 GPU 上的执行耗时低于 CPU 下发驱动指令的耗时，串行发射就会在计算流上制造大量空闲气泡。**
 
-明确了这两侧瓶颈之后，整个章节的三项核心技术就有了非常清晰的分工：
+在 PyTorch 默认的 **即时执行（Eager Mode）** 下，CPU 线程每执行到一行算子代码，都要完成形状校验、临时显存分配并通过 CUDA Runtime API 向 GPU 命令队列下发一个 **核函数（Kernel）**（在 GPU 上并行执行的函数实体）。从 CPU 调用发射接口到 GPU 调度器拉起计算的时间差称为 **核函数启动开销（Kernel Launch Overhead）**，纯驱动层耗时通常在 $3 \sim 10\text{ }\mu\text{s}$，叠加 Python 解释器调度后可达数十微秒。
 
-1. **算子融合（Operator Fusion）**：把多个连续的小算子合并成一个 Kernel，让中间结果留在 GPU 片上寄存器和共享内存中，直接削减 HBM 读写往返次数，并顺带减少 Kernel 数量。
-2. **CUDA Graphs**：把整段计算图预先录制下来，推理时 CPU 只需发射一次图重放指令，彻底消除层间数百次 Kernel Launch 带来的调度空泡。
-3. **投机解码（Speculative Decoding）**：既然单步只算 1 个 Token 喂不饱算力，就用极轻量的草稿先猜出 $\gamma$ 个后续 Token，让大模型在单次前向传播中并行验证它们，用原本闲置的算力换取单步多 Token 产出。
+在 Decode 阶段，每个解码层内含均方根归一化（RMSNorm）、残差相加（Residual Add）、旋转位置编码（RoPE）及激活函数等十余个独立算子。其中短算子在 GPU 上的实际计算耗时往往只有 $2 \sim 7\text{ }\mu\text{s}$，小于 CPU 发射间隔。数十层累加数百次发射后，<mark>CPU 调度延迟在端到端 TPOT 中的占比可达 $30\%$ 以上</mark>。
 
-这三项技术正交且可以叠加。下面我们逐一深入它们的物理机制、工程实现与边界条件。
+对照图 1 下半部分，后文依次拆解针对这两侧瓶颈的三项加速技术：**算子融合**减少 HBM 往返次数、**CUDA Graphs** 消除 CPU 逐个发射气泡、**投机解码**提高单步读取权重的产出词元数。
 
 ---
 
-## 算子融合：把多次显存往返压缩进片上缓存
+## 算子融合
 
-### GPU 存储层级与 HBM 往返代价
+面对 Decode 阶段逐元素算子与归一化算子频繁读写 HBM 的访存墙，最直接的工程思路是改变中间张量的存储生命周期，让它们尽量留在芯片内部而不落回外部主显存。
 
-理解算子融合为什么有效，只需要记住一个硬件事实：GPU 芯片内部的计算单元与片外 HBM 之间隔着一条狭窄的显存总线，而计算单元身边的片上存储（**寄存器 Registers** 与 **片上共享内存 Shared Memory / SRAM**）[^sram] 速度极快。
+### 算子融合原理
 
-- **HBM（片外全局显存）**：容量大（几十 GB），但访问延迟高（数百个时钟周期），总带宽在 TB/s 量级（如 H100 为 $3.35\text{ TB/s}$）。
-- **片上 SRAM 与寄存器**：容量小（每个流式多处理器 SM 仅有数百 KB），但延迟极低，聚合片上带宽可达数十 TB/s 乃至更高，比 HBM 高出一个数量级以上。
+**算子融合的物理收益来自 GPU 存储层级带宽差：片上寄存器与共享内存的访问带宽比片外 HBM 高出一个数量级以上。**
 
-在未融合的常规框架执行中，每一个独立算子都必须遵守“从 HBM 读入输入 $\rightarrow$ 在片上计算 $\rightarrow$ 把输出写回 HBM”的固定流程。对于矩阵乘法这种计算密集型算子，写回一次结果的开销微不足道；但对于归一化（RMSNorm/LayerNorm）、残差相加（Residual Add）、旋转位置编码（RoPE）、激活函数（SiLU/GELU）这类访存密集型算子（每个元素只做寥寥几次乘加），几乎全部时间都耗费在了跨 HBM 总线的数据搬运上。
+在 GPU 架构中，每个流式多处理器（Streaming Multiprocessor, SM）内部配备了线程私有的 **寄存器（Registers）** 与线程块内共享的 **片上共享内存（Shared Memory / SRAM）**（容量以百 KB 计，访问延迟极低，聚合片上带宽达数十 TB/s），而模型权重与中间激活张量默认存放在片外 HBM 中（带宽在数百 GB/s 到数 TB/s 量级）。
 
-### 推理中的典型融合模式
+未融合模式下，每个算子各自对应一次独立 Kernel 启动，必须走完“HBM 读入 $\to$ 片上计算 $\to$ HBM 写回”完整路径。**算子融合（Operator Fusion）** 将逻辑相邻的多个算子合并编译为单个 Kernel，使前一步算出的中间张量直接驻留在寄存器或片上 SRAM 中传递给下一步计算，省去中间结果跨 HBM 总线写回再重读的流量，同时减少 Kernel 启动次数。
 
-我们以 LLM 每个解码层都会执行两次的 `Residual Add + RMSNorm` 组合，以及前馈网络中的 `SwiGLU` 激活为例，定量计算显存带宽开销。
+### 典型算子融合方式
+
+根据所合并算子的计算特性，推理引擎中的算子融合主要分为以下两类典型方式：
+
+#### Memory-Bound 融合
+
+**把连续的访存密集型逐元素算子与归一化算子合入同一个 Kernel，可直接省去中间张量往返 HBM 的整倍流量。**
 
 ![算子融合对比：以 Residual Add + RMSNorm 为例](/images/inference/execution-acceleration/operator-fusion.svg)
 
-#### 模式一：访存密集型算子链融合（Memory-Bound Fusion）
+*图 4：未融合模式（上方，2 次 Kernel 启动且中间结果 `sum_buf` 往返 HBM）与融合模式（下方，中间结果片上直传）数据路径对比。*
 
-在 Llama 架构的 Pre-Norm 模块中，算子会依次执行残差相加和均方根归一化：
+对照图 4 中的 `Residual Add + RMSNorm` 路径，设输入 `x` 与 `residual` 字节体积均为 $S$（向量权重 $\gamma$ 体积远小于激活张量，核算中忽略）：
 
-```text
-sum_buf  = x + residual          # Kernel 1: Residual Add
-norm_out = rmsnorm(sum_buf) * γ  # Kernel 2: RMSNorm
-```
+1. **未融合路径（图 4 上半部分）**：Kernel 1 读取 `x` 与 `residual` 并写出 `sum_buf`，消耗 $3S$ 流量；Kernel 2 重读 `sum_buf` 并写出 `norm_out`，消耗 $2S$ 流量，合计搬运 $5S$ 字节并触发 $2$ 次启动。
+2. **融合路径（图 4 下半部分）**：单个 `FusedAddRMSNorm` Kernel 从 HBM 读入 `x` 与 `residual` 后直接在寄存器内相加，不落回 HBM，紧接着在片上 SRAM 内完成平方和归约与缩放，仅写出最终 `norm_out` 与更新后的 `residual`，总流量降为 $4S$ 且合并为 $1$ 次启动。
 
-假设输入张量 `x` 和 `residual` 的字节大小均为 $S$（向量权重 `γ` 的体积远小于激活张量，此处忽略不计）：
+对于不保留中间变量的 **SwiGLU 逐元素激活**（$\text{out} = \text{SiLU}(\text{gate}) \odot \text{up}$），省流比例更高：通过 **Triton**（开源 GPU 核函数 Python 领域特定语言）将其融合为单个核函数后只需读 `gate`、读 `up`、写 `out`，<mark>HBM 总流量从 $5S$ 降至 $3S$（减少 $40\%$）</mark>。
 
-- **未融合执行**：`Kernel 1` 从 HBM 读取 `x`（$S$）和 `residual`（$S$），写回 `sum_buf`（$S$），耗费 $3S$ 流量；`Kernel 2` 再从 HBM 重新读取 `sum_buf`（$S$），归一化后写回 `norm_out`（$S$），耗费 $2S$ 流量。两步合计搬运 **$5S$ 字节**，触发 **2 次 Kernel 启动**。
-- **融合执行（`FusedAddRMSNorm`）**：单个 Kernel 从 HBM 读入 `x`（$S$）和 `residual`（$S$）后，直接在线程寄存器中完成 `sum = x + residual`；紧接着不落盘回 HBM，直接在当前线程块（Thread Block）的寄存器与 Shared Memory 中完成平方和归约与缩放，最后将 `norm_out`（$S$）以及供下一层使用的更新后 `residual`（$S$）一次性写回 HBM。总流量降为 **$4S$ 字节**，且合并为 **1 次 Kernel 启动**。
-
-对于不需要保留中间变量的 `SwiGLU` 逐元素激活（$\text{out} = \text{SiLU}(\text{gate}) \odot \text{up}$），收益更为显著：未融合时需要写出再重读 `silu(gate)`，共搬运 $5S$ 字节；融合为单个 `FusedSiluAndMul` Kernel 后，只需读 `gate`、读 `up`、写 `out`，总访存量从 $5S$ 锐减至 **$3S$ 字节**，直接省去 $40\%$ 的 HBM 流量。
-
-#### 模式二：矩阵乘后处理融合（GEMM Epilogue Fusion）与 Attention 融合
-
-除纯逐元素链之外，现代推理引擎还会把小算子合并到大算子的尾部或内部：
-
-- **Epilogue 融合**：在矩阵乘（GEMM/GEMV）把结果从累加寄存器写回 HBM 之前，顺手在寄存器里完成加偏置（Bias Add）、激活函数或输出量化（Cast to FP8/INT8），避免专门再起一次逐元素 Kernel。
-- **Attention 融合（FlashAttention / FlashDecoding）**：传统注意力需要把巨大的注意力分数矩阵 $S = QK^T$ 写回 HBM，再做 Softmax，再读回来乘 $V$。融合算子通过分块（Tiling）与在线 Softmax（Online Softmax）将中间分数矩阵完全锁在片上 SRAM 中，把注意力计算的 HBM 读写复杂度从序列长度的平方级压降为线性级。
-
-### 手工融合、编译器自动融合与物理边界
-
-在工程实现上，算子融合主要有两条路径：
-
-1. **手工编写专用 Kernel（CUDA / CUTLASS / Triton）**：针对高频固定模式（如 `FusedAddRMSNorm`、`FusedRoPE`、`FlashAttention`），由引擎作者手工编写高度优化的核函数。下面是一段使用 **Triton**[^triton] 编写融合版 `SiLU + 逐元素乘法` 的核心逻辑示意——通过一次指针加载将两个张量读入寄存器，在芯片内部完成运算后直接写出：
+::: details 点击展开：Triton 融合 SwiGLU 核函数源码与带宽测试对比
+以下代码展示用 Triton 编写单 Kernel 融合 `SiLU + 逐元素乘` 的核心写法：
 
 ```python
 import triton
 import triton.language as tl
 
 @triton.jit
-def fused_silu_mul_kernel(
-    gate_ptr, up_ptr, out_ptr, n_elements,
-    BLOCK_SIZE: tl.constexpr,
-):
+def fused_silu_mul_kernel(gate_ptr, up_ptr, out_ptr, n_elements, BLOCK_SIZE: tl.constexpr):
     pid = tl.program_id(axis=0)
     offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
     mask = offsets < n_elements
-
-    # 1. 从 HBM 一次读入两个输入张量块，加载到片上寄存器
+    # 1. 从 HBM 一次性读入两个输入切片至寄存器，内部转 FP32 保证 Sigmoid 精度
     gate = tl.load(gate_ptr + offsets, mask=mask, other=0.0).to(tl.float32)
     up = tl.load(up_ptr + offsets, mask=mask, other=0.0).to(tl.float32)
-
-    # 2. 全部计算在寄存器内完成，中间结果不回写 HBM
-    silu_gate = gate * tl.sigmoid(gate)
-    out = silu_gate * up
-
-    # 3. 仅将最终结果写回 HBM
-    tl.store(out_ptr + offsets, out.to(gate_ptr.dtype.element_ty), mask=mask)
+    # 2. 中间乘积完全留在寄存器内，不回写 HBM
+    out = (gate * tl.sigmoid(gate)) * up
+    # 3. 仅写回最终输出张量
+    tl.store(out_ptr + offsets, out.to(tl.float16), mask=mask)
 ```
 
-2. **编译器自动融合（如 `torch.compile` / TorchInductor）**：对于大量结构多变的逐元素或归约组合（例如采样前的温度缩放、Top-K/Top-P 掩码、惩罚项计算），编译器会自动把计算图切分成子图，生成融合后的 Triton Kernel，无需人工维护数十个变体。
+以下实测输出采集自一块 **NVIDIA GeForce RTX 5070（48 SM，实测 HBM 拷贝带宽 576.7 GB/s，PyTorch `2.14.0+cu130`，Triton `3.8.0`）**，测试中间维度 `H_ffn = 14336` 的 FP16 SwiGLU（`warmup=30, iters=200`）：
 
-**那么，是不是把越多算子融进一个 Kernel 就越好？** 答案是否定的。算子融合存在明确的硬件资源边界：
+```text
+Empirical HBM copy bandwidth: 576.7 GB/s (0.465 ms for 256 MB traffic)
+B=  1, H_ffn=14336: Unfused=   6.56 us | Fused=   6.86 us | Speedup=0.96x | max_diff=3.91e-03
+B= 32, H_ffn=14336: Unfused=   6.76 us | Fused=   6.89 us | Speedup=0.98x | max_diff=7.81e-03
+B=128, H_ffn=14336: Unfused=   7.19 us | Fused=   6.86 us | Speedup=1.05x | max_diff=7.81e-03
+B=512, H_ffn=14336: Unfused=  64.02 us | Fused=  10.79 us | Speedup=5.93x | max_diff=7.81e-03
+```
 
-- **寄存器压力（Register Pressure）与占用率（Occupancy）下降**[^occupancy]：融合进来的逻辑越复杂，单个线程需要同时维护的中间变量就越多，分配给每个线程的寄存器数量随之膨胀。GPU 每个 SM 上的寄存器总量是固定的，单线程占用寄存器过多会迫使 SM 减少同时驻留的线程块数量（即占用率下降），严重时甚至发生 **寄存器溢出（Register Spilling）**——编译器被迫把多出来的变量退回给慢速的本地显存（本质上仍在 HBM 上），反而使融合收益归零甚至倒退。
-- **跨归约维度屏障**：融合天然适合相同的并行切分维度（例如都按 Token 行并行）。一旦相邻算子需要改变并行切分轴（例如前一步按行归约，后一步需要跨所有行做全局归约），就必须同步全局数据，通常需要在算子边界切开。
+**结果解读与分析**：
+1. **小张量阶段（$B \le 128$）受限于 Kernel 启动开销**：`B=1` 时张量仅 $28\text{ KB}$，纯显存读写耗时不足 $0.2\text{ }\mu\text{s}$，两组耗时均停留在 $6.6 \sim 7.2\text{ }\mu\text{s}$ 启动延迟平台，说明小张量必须配合 CUDA Graphs 消除启动开销。
+2. **大张量带宽敏感区（$B = 512$）融合加速达 $5.93\times$**：此时单张量达 $14.7\text{ MB}$，超出 L2 缓存局部驻留范围，未融合模式触发中间缓冲分配与多次 HBM 往返使耗时跳升至 $64.02\text{ }\mu\text{s}$，而融合核函数压至 $10.79\text{ }\mu\text{s}$。
+3. **数值误差受控**：`max_diff` 处于 FP16 正常舍入误差范围（$\le 7.81 \times 10^{-3}$）。
+:::
+
+#### Epilogue 融合
+
+**把偏置相加、激活函数或输出量化直接合入矩阵乘核函数的收尾阶段，可以消除矩阵乘之后的一次全张量访存。**
+
+在传统计算图中，大型矩阵乘法（GEMM / GEMV）先把累加结果从寄存器写回 HBM，紧接着再启动一个逐元素 Kernel 读回该矩阵加偏置（Bias Add）、过激活函数或转换为低精度格式（如 FP8）。**尾声融合（Epilogue Fusion）** 在矩阵乘累加寄存器结果即将写回 HBM 之前，直接在寄存器里顺手完成上述后处理，然后一次性写出最终结果。
+
+同一思路在注意力算子上体现为 **FlashAttention 分块融合**：通过 SRAM 分块（Tiling）与在线 Softmax（Online Softmax），将注意力分数矩阵 $QK^T$ 全程锁在片上 SRAM 中完成归一化并与 $V$ 相乘，避免 $O(N^2)$ 规模的中间分数矩阵落入 HBM。
+
+### 算子融合的寄存器压力与 SM 占用率边界
+
+**算子融合受制于单个 SM 的固定寄存器总量，过度合并复杂算子会拉低占用率并触发寄存器溢出。**
+
+GPU 每个 SM 的寄存器文件容量固定（例如每 SM 65536 个 32 位寄存器）。单个融合 Kernel 内并入的计算步骤越多，编译器为每个线程同时分配的存活寄存器就越多。当每线程寄存器数量突破阈值时，SM 上可同时驻留的活跃线程束比例——即 **占用率（Occupancy）**——被迫下降，削弱隐藏显存延迟的能力；极端情况下多余变量会溢出到位于 HBM 的本地内存中（Register Spilling），使融合收益彻底逆转。此外，当相邻算子需要切换并行归约轴时，也必须在同步边界切开，交由 `torch.compile` / TorchInductor 等编译器自动搜索最优子图边界。
 
 ---
 
-## CUDA Graphs：用一次图重放取代上百次 Kernel 启动
+## CUDA Graphs
 
-解决了相邻算子之间的 HBM 往返之后，Decode 阶段依然存在几十个无法合并的 Kernel（例如各层之间独立的线性投影、Attention 与通信算子）。如果仍然由 CPU 逐个启动它们，GPU 上依然会布满发射空泡。**CUDA Graphs**[^cudagraphs] 正是为了彻底抹平 CPU 侧的调度延迟而设计的执行机制。
+算子融合降低了单步 HBM 读写量，但模型各层之间仍存在数十个无法合为一体的线性投影、注意力与集合通信 Kernel。如果继续由 CPU 在运行时逐一提交它们，GPU 计算流上依然会留出大量发射气泡。如何一次性把整串 Kernel 发射任务从 CPU 侧剥离出来？
 
-![CUDA Graphs 时间线对比与分段图机制](/images/inference/execution-acceleration/cuda-graphs-timeline.svg)
+### CUDA Graphs 简介
 
-### Capture 与 Replay 的两阶段机制
+**CUDA Graphs 是一种将多步 GPU 操作及其依赖关系预先固化为静态图并在运行时单次提交重放的执行抽象。**
 
-CUDA Graphs 的核心思想非常简单：Decode 每一步执行的算子序列结构高度重复，既然每次算子拓扑都相同，就没有必要每跑一步都让 CPU 重新走一遍 Python 解析、形状推导和驱动提交流程。
+在常规 Eager 模式下，哪怕每一轮 Decode 的网络结构完全一致，CPU 也必须重复做一遍 Python 逻辑解析、算子调度与 CUDA API 发射。自 CUDA 10 引入的 [CUDA Graphs](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html) 改变了这一流程：它将原本分散在每次推理步中的 CPU 驱动工作全部前移至服务启动或预热阶段，运行时只需向 GPU 命令队列发出一张完整执行图的句柄，由 GPU 硬件调度器接管图内全部 Kernel 的连续拉起。
 
-它将执行拆分为 **录制（Capture）** 与 **重放（Replay）** 两个阶段：
+### Graph Capture 与 Graph Replay 机制
 
-1. **图捕获（Graph Capture）**：引擎先将 CUDA 流置于捕获模式（`cudaStreamBeginCapture`），然后正常跑一遍前向传播。在这个过程中，GPU **并不真正执行计算**，CUDA 驱动只是把这一次跑过的所有 Kernel、Kernel 之间的依赖边、Grid/Block 启动配置以及每个输入输出张量绑定的**固定显存虚拟地址**记录下来，在底层构建一张有向无环图（DAG），随后调用 `cudaGraphInstantiate` 将其编译固化为可执行图实例。
-2. **图重放（Graph Replay）**：到了真实推理阶段，引擎只需将新一步的输入数据（例如新的 `input_ids` 和位置索引）拷贝进 Capture 阶段绑定的那几块固定输入显存缓冲区，然后 CPU 调用一次 `cudaGraphLaunch`（在 PyTorch 中即 `graph.replay()`）。驱动把整张包含上百个 Kernel 的图一次性提交给 GPU 硬件调度器，后续全部 Kernel 由 GPU 在内部背靠背连续拉起，CPU 在提交完成的那一刻即可立刻抽身去准备下一轮请求的调度逻辑。
+**CUDA Graphs 通过“图捕获记录指针拓扑 + 图重放原地更新数据”两阶段机制，将上百次 CPU 发射开销压成单次调用。**
 
-在 PyTorch 中，使用 CUDA Graph 的最小工程模式如下：
+![CUDA Graphs 原理与分段图（Piecewise）机制](/images/inference/execution-acceleration/cuda-graphs-timeline.svg)
 
+*图 5：Eager 逐个下发产生 GPU 空闲气泡（左上）、CUDA Graph 单次提交连续执行（右上），以及面对动态 Attention 的 Piecewise 分段图结构（下方）。*
+
+对照图 5 顶部的 `1. Eager 模式` 与 `2. CUDA Graph Replay` 对比，CUDA Graphs 的运行闭环分为两个阶段：
+
+1. **图捕获（Graph Capture）**：引擎将 CUDA 流切换为捕获状态并执行一次前向传播。此过程 GPU 不做真实计算，驱动仅记录所经过的全部 Kernel、依赖拓扑、网格维度以及每个输入输出张量绑定的**固定显存虚拟地址**，编译实例化为可执行图对象。
+2. **图重放（Graph Replay）**：进入正式推理后，CPU 仅把新一轮输入数据原地拷贝（In-place Copy）至 Capture 阶段绑定的固定输入缓冲区，随后调用一次 `cudaGraphLaunch`（PyTorch 中对应 `graph.replay()`）。图 5 右上方的 `K1` 至 `K3` 随即在 GPU 内背靠背连续执行，CPU 发射任务瞬间完成并可立即处理下一轮调度。
+
+下面的 NVIDIA 官方 Nsight Systems 实测截图，直观展示了短算子序列在启用 CUDA Graphs 前后 GPU 时间线上的真实差异：
+
+![NVIDIA 官方 Nsight Systems 传统流逐个发射 shortKernel 时间线](/images/inference/execution-acceleration/nvidia-cudagraph-before.png)
+
+*图 6：未使用 CUDA Graphs 时，CPU 端每次调用需经过 `cudaStream...` 发射流程，导致 GPU 行上相邻 `shortKernel` 之间出现大量白色空闲间隙。来源：[NVIDIA Technical Blog — Getting Started with CUDA Graphs](https://developer.nvidia.com/blog/cuda-graphs/)。*
+
+![NVIDIA 官方 Nsight Systems 启用 CUDA Graphs 后 shortKernel 紧凑执行时间线](/images/inference/execution-acceleration/nvidia-cudagraph-after.png)
+
+*图 7：启用 CUDA Graphs 后，多个 `shortKernel` 由硬件在图内部紧凑连续拉起，相邻内核间的发射空泡被大幅消除。来源：[NVIDIA Technical Blog — Getting Started with CUDA Graphs](https://developer.nvidia.com/blog/cuda-graphs/)。*
+
+::: details 点击展开：PyTorch CUDA Graph 静态缓冲录制与重放最小模板
 ```python
 import torch
 
-# 1. 预先分配固定地址的静态输入缓冲（Static Buffers）
-static_input = torch.empty((batch_size, hidden_dim), dtype=torch.float16, device="cuda")
-static_output = torch.empty_like(static_input)
+# 1. 预分配固定显存地址的静态输入与输出缓冲（Capture 后指针地址不可改变）
+static_x = torch.empty((1, 4096), dtype=torch.float16, device="cuda")
+static_y = torch.empty_like(static_x)
 
-# 2. Warmup：触发 CUDA 上下文、cuBLAS 句柄与显存分配器初始化（不可在 Capture 中首次初始化）
+# 2. Warmup：在私有流上预热，确保 cuBLAS 句柄、显存池与 JIT 核函数在 Capture 前就绪
 s = torch.cuda.Stream()
 s.wait_stream(torch.cuda.current_stream())
 with torch.cuda.stream(s):
     for _ in range(3):
-        static_output.copy_(decode_step(static_input))
+        static_y.copy_(decode_step(static_x))
 torch.cuda.current_stream().wait_stream(s)
 
-# 3. Capture：捕获整段计算图
+# 3. Graph Capture：录制静态拓扑与固定缓冲地址
 g = torch.cuda.CUDAGraph()
 with torch.cuda.graph(g):
-    static_output.copy_(decode_step(static_input))
+    static_y.copy_(decode_step(static_x))
 
-# 4. Replay：推理循环中只需原地更新静态缓冲并重放
-for step_tensor in incoming_steps:
-    static_input.copy_(step_tensor)  # 原地拷贝，保持显存指针地址不变
+# 4. Graph Replay：推理循环仅做原地拷贝与单次图重放
+for incoming_token_hidden in decode_steps:
+    static_x.copy_(incoming_token_hidden)  # 必须使用 copy_ 原地覆写，不能重新赋值张量
     g.replay()
-    # 此时 static_output 中即为本步结果
+```
+:::
+
+### 推理引擎中的 CUDA Graph 应用
+
+直接把一整张静态图套用在真实 LLM 服务中，会立刻遭遇**动态 Batch Size** 与 **动态序列长度** 两大障碍——图捕获要求指针地址、张量形状与控制流在录制后完全静态。现代推理引擎（如 vLLM、SGLang）采用以下两项组合机制打通工程落地：
+
+#### 分桶与填充
+
+**预先只对离散的 Batch 档位录制有限张静态图，运行时把实时并发请求向上对齐补齐至最近档位重放。**
+
+连续批处理（Continuous Batching）下每一步活跃并发数都在变动，为所有可能的整数并发度各录一张图会耗尽静态缓冲显存。引擎在初始化时只针对一组离散档位（例如 `[1, 2, 4, 8, 16, 24, 32, ...]`）录制静态图。当某步实际到达 $11$ 条请求时，调度器将输入张量向上填充（Pad）至 $16$ 行后重放 $B=16$ 对应的图，并在注意力掩码层面隔离空填充行，避免污染真实请求的 KV Cache。
+
+#### 元数据静态化与分段图捕获
+
+**通过固定指针传递可变长度数组或在 Attention 边界拆分为分段图，使 CUDA Graphs 兼容动态序列长度与混合批处理。**
+
+每条请求的历史长度 `seq_lens` 与 KV Cache 块索引 `block_tables` 每步都在变化。主流引擎采取两条互补路线应对：
+
+- **元数据静态化（Full CUDA Graph）**：把 `seq_lens`、`block_tables`、`slot_mapping` 预先放进固定显存地址的张量缓冲中，重放前仅原地覆写其中的整数值，支持全图捕获的注意力内核直接按静态指针读出最新长度，从而将整模型前向收入单张大图。
+- **分段图捕获（Piecewise CUDA Graph）**：当服务开启分块预填充（Chunked Prefill）混跑或使用暂不支持全图捕获的注意力后端时，编译器对照图 5 第 3 段在 Attention 边界将计算图切开——Attention 前后的 `RMSNorm + QKV + RoPE` 与 `O投影 + MLP` 被分别捕获进静态图片段，仅让动态 Attention 保持 Eager 执行。
+
+---
+
+## 投机解码
+
+算子融合压缩了 HBM 往返流量，CUDA Graphs 消除了 CPU 发射气泡，但两者都不改变自回归解码的结构约束：每搬运一次全部模型权重，依然只产出一个词元。既然小并发下计算单元大部分时间在等待数据搬运，能否在读取一次权重的同时，并行算出并确认多个词元？
+
+### 投机解码原理介绍
+
+**投机解码通过“轻量草稿猜想多步 + 目标模型单步并行验证 + 逐位拒绝采样”，在不改变目标模型输出分布的前提下把单步串行依赖转化为并行计算。**
+
+回到图 2 的 Roofline 模型：小并发 Decode 位于远低于脊点的带宽受限区。若通过 **因果掩码（Causal Mask）**（屏蔽后续位置对前面位置的注意力可见性）构造长度为 $\gamma + 1$ 的并行输入喂入 **目标模型（Target Model）**，目标模型只需从 HBM 读取**一次权重**即可同时输出全部 $\gamma + 1$ 个位置的精确分布，耗时几乎与单步生成 1 个词元相同。
+
+![投机解码：草稿生成、并行验证与拒绝采样](/images/inference/execution-acceleration/speculative-decoding.svg)
+
+*图 8：投机解码单轮执行三阶段——草稿生成（左）、目标模型单步并行验证（中）与逐位拒绝采样裁决（右）。*
+
+对照图 8 从左到右三个阶段，[投机解码（Speculative Decoding）](https://arxiv.org/abs/2211.17192) 每轮按以下流程推进：
+
+1. **草稿生成（Drafting）**：由计算开销极低的 **草稿模型（Draft Model）** 或轻量预测机制从已知前缀出发，连续猜想 $\gamma$ 个候选词元 $x_1, \dots, x_\gamma$ 及草稿概率分布 $q_1, \dots, q_\gamma$。
+2. **并行验证（Parallel Verification）**：将前缀末尾词 $t_n$ 与 $\gamma$ 个候选拼接成长度为 $\gamma + 1$ 的输入序列送入目标模型，单次前向并行给出精确分布 $p_1, \dots, p_{\gamma+1}$。
+3. **逐位拒绝采样（Rejection Sampling）**：依次检验位置 $i = 1 \dots \gamma$，以概率 $\min\bigl(1, \frac{p_i(x_i)}{q_i(x_i)}\bigr)$ 接受 $x_i$。一旦某个位置 $i$ 被拒绝（如图 8 右侧 `x3 拒绝`），作废其后所有候选，并从归一化残差分布 $\text{norm}(\max(0, p_i - q_i))$ 重采样修正词 $x'_i$；若全部 $\gamma$ 个候选均被接受，则顺带采样第 $\gamma + 1$ 个分布 $p_{\gamma+1}$ 作为额外奖励词元（Bonus Token）。
+
+<mark>每轮至少保证产出 1 个目标分布词元，最多可推进 $\gamma + 1$ 个词元</mark>，且输出分布与单独运行目标模型在数学上严格一致。
+
+::: details 点击展开：算法 1（投机解码伪代码）与拒绝采样分布等价性证明
+> **算法 1：单轮投机解码（Speculative Sampling）**（来源：[Leviathan et al., 2023](https://arxiv.org/abs/2211.17192)）
+> - **输入**：已有前缀 $T = [t_1, \dots, t_n]$，目标模型 $M_p$，草稿机制 $M_q$，草稿步长 $\gamma$
+> - **输出**：追加确认的 $1 \sim \gamma + 1$ 个词元序列
+>
+> 1. **for** $i = 1$ **to** $\gamma$ **do**
+> 2. &emsp;计算草稿概率分布 $q_i \leftarrow M_q(T + [x_1, \dots, x_{i-1}])$
+> 3. &emsp;从草稿分布采样 $x_i \sim q_i$
+> 4. **end for**
+> 5. 并行调用目标模型计算全部位置分布 $(p_1, \dots, p_{\gamma+1}) \leftarrow M_p(T + [x_1, \dots, x_\gamma])$
+> 6. 初始化接受前缀计数 $k \leftarrow 0$
+> 7. **for** $i = 1$ **to** $\gamma$ **do**
+> 8. &emsp;采样均匀随机数 $r \sim U(0, 1)$
+> 9. &emsp;**if** $r \le \frac{p_i(x_i)}{q_i(x_i)}$ **then**
+> 10. &emsp;&emsp;接受 $x_i$ 并更新 $k \leftarrow k + 1$
+> 11. &emsp;**else**
+> 12. &emsp;&emsp;从残差分布 $p'_i(x) \propto \max(0, p_i(x) - q_i(x))$ 重采样修正词 $x'_i$ 并跳出循环
+> 13. &emsp;**end if**
+> 14. **end for**
+> 15. **if** $k = \gamma$ **then** 从 $p_{\gamma+1}$ 采样额外词元 $x'_{\gamma+1}$，**return** $[x_1, \dots, x_\gamma, x'_{\gamma+1}]$
+> 16. **else** **return** $[x_1, \dots, x_k, x'_{k+1}]$
+
+**分布等价性分步证明**（任意单位置任意词元 $x$）：
+$$
+\begin{aligned}
+P(\text{直接接受 } x) &= q(x) \cdot \min\left(1, \frac{p(x)}{q(x)}\right) &&\text{（草稿抽中且通过校验）} \\
+&= \min\bigl(q(x), p(x)\bigr) &&\text{（消去正概率分母）} \\
+\beta &= 1 - \sum_y \min\bigl(q(y), p(y)\bigr) &&\text{（全部词拒绝概率之和）} \\
+&= \sum_y \max\bigl(0, p(y) - q(y)\bigr) &&\text{（利用恒等式拆分）} \\
+P(\text{输出 } x) &= \min\bigl(q(x), p(x)\bigr) + \beta \cdot \frac{\max\bigl(0, p(x) - q(x)\bigr)}{\beta} &&\text{（两条互斥路径相加）} \\
+&= \min\bigl(q(x), p(x)\bigr) + \max\bigl(0, p(x) - q(x)\bigr) &&\text{（约去拒绝归一化因子）} \\
+&= p(x) &&\text{（严格还原目标分布）}
+\end{aligned}
+$$
+:::
+
+### 典型投机解码技术
+
+早期投机解码依赖单独部署一个更小的同家族独立模型作为草稿模型，但在多卡并行部署中需要额外管理两套权重与两份 KV Cache，且小模型与目标大模型分布存在落差。为简化部署并提高接收率，社区演化出无需独立大草稿模型的轻量挂载架构（以及基于提示词检索的 N-gram 查表方法）：
+
+#### Medusa
+
+**Medusa 在目标模型冻结主干的顶层特征上挂载多个并行的线性解码头，单次前向同时预测未来多个位置的候选词元并构造候选树并行验证。**
+
+[Medusa](https://arxiv.org/abs/2401.10774) 完全省去独立草稿模型：在主干最后一层隐藏状态之后新增 $\gamma$ 个轻量预测头，分别并行输出第 $t+1, t+2, \dots, t+\gamma$ 步的词表分布，再将各步的高概率候选组合为一棵多分支候选树（Token Tree），通过定制的树形注意力掩码（Tree Attention）交由目标模型单步验证。
+
+Medusa-1 保持原模型主干权重冻结、仅微调预测头，可保证输出质量无损；Medusa-2 将主干与预测头联合微调以获得更高加速比。其主要结构局限在于**各预测头之间互相独立预测，缺乏相邻步之间的条件自回归依赖**，导致步长增大时后继预测头的准确率下降较快。
+
+#### EAGLE-3
+
+**EAGLE-3 放弃早期的特征预测限制，改为直接自回归预测词元，并通过多层特征融合（Training-Time Test）让草稿头能随训练数据规模扩展持续提高接收率。**
+
+早期的 EAGLE 系列尝试在目标模型顶层隐特征空间做自回归外推，但存在特征误差累积与训练数据扩增收益见顶的问题。[EAGLE-3](https://arxiv.org/abs/2503.01840) 做出了两项关键架构变革：
+
+1. **直接预测词元**：移除特征层回归约束，让单层轻量自回归草稿头直接基于上下文条件预测下一词元，彻底消除单步特征外推误差的层层放大，重新打通草稿头随训练数据增长的 Scaling 收益。
+2. **多层特征融合（Training-Time Test）**：不再只读取目标模型的最后一层特征，而是融合目标模型浅、中、深多层隐藏特征作为草稿头的条件输入，在推理时以极低单步耗时恢复主干语义上下文并配合动态候选树验证。
+
+### 投机解码的收益边界
+
+**投机解码仅在访存受限且接收率足够高时有效；当高并发把计算推入 Compute-Bound 平台区，额外验证矩阵计算会直接导致总吞吐下降。**
+
+设平均 **接收率（Acceptance Rate）** 为 $\alpha \in (0, 1)$，单步草稿相对耗时为 $c = T_{\text{draft}}(1) / T_{\text{target}}(1)$，目标模型并行验证 $\gamma + 1$ 个位置的耗时膨胀系数为 $r_{\text{verify}}(\gamma) = T_{\text{target}}(\gamma + 1) / T_{\text{target}}(1)$，则理论期望加速比为：
+
+$$
+\text{Speedup} = \frac{1 - \alpha^{\gamma + 1}}{(1 - \alpha)\bigl(c \cdot \gamma + r_{\text{verify}}(\gamma)\bigr)} \tag{2}
+$$
+
+由公式 (2) 可直接判断两条硬边界：
+
+- **任务可预测性与草稿开销（$\alpha$ 与 $c$）**：在代码补全、结构化改写等高确定性任务中（$\alpha \approx 0.8$），单轮期望产出可达 $3 \sim 4$ 个词元；若生成高度发散（$\alpha < 0.4$）或草稿本身耗时过高（$c$ 偏大），分母膨胀会抵消分子收益。
+- **并发 Batch Size 拐点（$r_{\text{verify}}(\gamma)$）**：单请求（$B=1$）下验证 $\gamma+1$ 个位置几乎不增加权重读取耗时，$r_{\text{verify}}(\gamma) \approx 1.0$；当线上服务并发拉高至大 Batch 时，验证矩阵行数被放大 $(\gamma + 1)$ 倍，算术强度跨过图 2 脊点进入算力平台区，此时 <mark>$r_{\text{verify}}(\gamma)$ 随 $(\gamma+1)$ 线性攀升</mark>，使整体吞吐出现净倒退。
+
+---
+
+## 入门动手实战
+
+下面从零搭建推理环境并编写单文件对照脚本，在通用 NVIDIA GPU 上独立复现“无加速 Eager 基线 $\to$ 算子融合 + CUDA Graphs $\to$ 叠加投机解码”的延迟变化，并实测高并发下的吞吐拐点。
+
+### 环境搭建
+
+**仅假定本机具备基础 CUDA 驱动与 Python 3.10+ 环境，必须先创建独立虚拟环境并显式安装推理框架 vLLM 与底层编译构建工具。**
+
+**第一步：创建实验目录与隔离虚拟环境**
+
+```bash
+mkdir -p ~/compute_factory_lab/execution-acceleration
+cd ~/compute_factory_lab/execution-acceleration
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-### 动态推理场景下的三大工程约束
+- **路径说明**：`~/compute_factory_lab/execution-acceleration` 为示例工作目录，可替换为任意本机可写路径。
+- **隔离作用**：使用 `venv` 避免与系统已有 PyTorch 环境冲突，激活后命令行前缀出现 `(.venv)`。
 
-上述极简代码看起来很完美，但把它放进真实的 LLM 服务引擎（如 vLLM、SGLang、TensorRT-LLM）时，会立刻撞上 CUDA Graphs 的三大硬性限制：
+**第二步：安装 vLLM 与 JIT 编译依赖**
 
-1. **禁止动态控制流与主机同步**：Capture 阶段录制的是固定的操作序列。计算过程内部不能出现依赖 GPU 计算结果的 `if/else` 分支，也不能调用 `tensor.item()` 或 `cudaStreamSynchronize` 把控制权同步回 CPU。
-2. **张量形状与内存地址必须静态不变**：图一旦实例化，每个 Kernel 读取的张量指针和维度就固定了。但在真实线上服务中，**连续批处理（Continuous Batching）**[^continuous-batching] 的实时并发请求数（Batch Size）每一步都在增减，每条请求的上下文历史长度（Sequence Length）每一步也在增长，KV Cache 物理块索引表（Block Table）也在动态变化。
-3. **显存静态占用成本**：每一张独立捕获的 CUDA Graph 都需要持有其内部激活张量的静态显存池（尽管多个图之间可以共享同一块私有显存池以减少冗余，但图的数量依然不能无限膨胀）。
+```bash
+pip install -U pip
+pip install -U vllm ninja
+```
 
-### 推理引擎解法：分桶填充与分段图捕获
+- **核心组件**：安装 `vllm` 会自动拉取匹配版本的 `torch` 与 `triton`；显式安装 `ninja` 构建工具是因为 `torch.compile` 与 FlashInfer 在首次执行时会即时编译部分辅助核函数，缺少 `ninja` 会在引擎初始化时直接报错退出。
+- **CUDA 路径检查**：若系统存在多版本 CUDA Toolkit，需确认 `nvcc` 所在目录（如 `/usr/local/cuda/bin`）已在 `PATH` 中，并将 `.venv/bin` 保持在 `PATH` 搜索队列前位。
 
-为了在动态服务场景下依然用上 CUDA Graphs，现代推理引擎普遍采用以下两项组合策略：
+**第三步：准备测试模型权重（离线下载可选）**
 
-- **分桶与填充（Bucketing & Padding）应对动态 Batch Size**
-  引擎不会为每一种可能出现的 Batch Size（例如 1 到 256）分别录制 256 张图，而是在启动预热阶段，只针对一组预先选定的离散档位（例如 `[1, 2, 4, 8, 16, 24, 32, 48, 64, 128, 256]`）预先捕获对应的 CUDA Graph。
-  当某一步真实到达的请求数为 $b = 11$ 时，调度器会向上对齐到最近的桶 $B_{\text{bucket}} = 16$，用空数据将输入张量补齐（Padding）到 16 行，并在图外或掩码中确保补齐行不污染实际请求的 KV Cache。为了控制补齐带来的额外显存和算力浪费，小 Batch 区间分桶更密集（如步长 1 或 2），大 Batch 区间步长更宽（如步长 16 或 32）。
-- **静态地址元信息与分段图捕获（Piecewise CUDA Graph）应对动态序列长度**
-  针对每步都在增长的序列长度与 KV Cache 块表，引擎主要有两种应对方式：
-  - **支持全图捕获的 Attention 后端（Full CUDA Graph）**：将 `seq_lens`、`block_tables`、`slot_mapping` 等动态变化的元数据张量也放进固定地址的 GPU 静态缓冲区中，每步 `replay()` 前仅原地覆写这些元数据数组里的数值，Attention Kernel 内部直接读取静态指针上的最新长度值，从而让整模型前向传播被捕获进同一张大图。
-  - **分段图捕获（Piecewise CUDA Graph）**：当遇到不支持全图静态化的混合批（如将长提示词切分后与解码请求混跑的 **分块预填充 Chunked Prefill**[^chunked-prefill]）或某些动态算子时（例如 vLLM 的 `PIECEWISE` 模式），编译器会在 Attention 算子边界处把模型计算图切开——Attention 之前（`RMSNorm + QKV 投影 + RoPE`）捕获为一段静态图，Attention 本身以 Eager 模式灵活运行，Attention 之后（`O 投影 + Residual + MLP`）再捕获为另一段静态图。这样既保留了对动态序列和复杂注意力后端的完全兼容性，又把绝大部分层内小算子的启动开销收入了 CUDA Graph。
+```bash
+pip install -U huggingface_hub
+huggingface-cli download Qwen/Qwen3-0.6B --local-dir /path/to/models/Qwen3-0.6B
+```
+
+- **草拟路径替换提醒**：`/path/to/models/Qwen3-0.6B` 为草拟占位路径，执行前需修改为你本机实际存放权重的路径（例如 `~/models/Qwen3-0.6B`）。
+- **在线拉取替代方式**：若运行环境可直接访问 Hugging Face，也可跳过此步，在下方脚本中直接把 `MODEL_PATH` 设为 `"Qwen/Qwen3-0.6B"` 由引擎首次启动时自动拉取；国内网络环境可前置 `HF_ENDPOINT` 镜像变量。
+
+### 脚本编写
+
+**通过控制 `enforce_eager` 与 `speculative_config` 两个开关，即可在同一套提示词与贪心采样下隔离出三组无损加速模式的真实耗时差异。**
+
+在当前工作目录 `execution-acceleration` 下新建文件 `bench_exec_modes.py`，填入以下完整代码（注意按本机环境替换 `MODEL_PATH`）：
+
+```python
+import argparse
+import time
+import torch
+from vllm import LLM, SamplingParams
+
+# 注意：将下方草拟路径替换为你的本机模型目录，或直接填写 "Qwen/Qwen3-0.6B" 自动拉取
+MODEL_PATH = "/path/to/models/Qwen3-0.6B"
+
+BASE_PROMPT = (
+    "Here is a Python function. Rewrite the exact same function with type hints and a concise docstring:\n"
+    "```python\n"
+    "def compute_arithmetic_intensity(flops, bytes_moved):\n"
+    "    if bytes_moved <= 0:\n"
+    "        raise ValueError('bytes_moved must be positive')\n"
+    "    return flops / bytes_moved\n"
+    "```\n"
+    "Rewritten Python function:\n```python\n"
+)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=["eager", "default", "ngram"], required=True)
+    # batch-size=1 验证低并发延迟收益，batch-size=64 验证高并发计算受限拐点
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--repeats", type=int, default=1)
+    args = parser.parse_args()
+
+    kwargs = {}
+    if args.mode == "eager":
+        # 禁用 torch.compile 算子融合与 CUDA Graphs，退回逐算子 Eager 发射基线
+        kwargs["enforce_eager"] = True
+    elif args.mode == "default":
+        # 启用 vLLM V1 默认编译优化与 FULL_AND_PIECEWISE 分段/全图 CUDA Graphs
+        kwargs["enforce_eager"] = False
+    elif args.mode == "ngram":
+        kwargs["enforce_eager"] = False
+        # 开启基于提示词 N-gram 匹配的投机解码：无需加载额外草稿模型，适合代码改写等高复用文本
+        kwargs["speculative_config"] = {
+            "method": "ngram",
+            "num_speculative_tokens": 5,
+            "prompt_lookup_max": 4,
+        }
+
+    llm = LLM(
+        model=MODEL_PATH,
+        dtype="bfloat16",
+        max_model_len=2048,
+        # 控制 KV Cache 预分配显存上限比例，适配 8GB~12GB 显存显卡；若显存紧张可调小至 0.35
+        gpu_memory_utilization=0.5,
+        disable_log_stats=True,
+        **kwargs,
+    )
+    # 固定 temperature=0.0（贪心采样）并截断为 128 个词元，确保不同执行模式下的输出与步数完全对齐
+    sampling = SamplingParams(temperature=0.0, max_tokens=128)
+    prompts = [f"[req {i}] " + BASE_PROMPT for i in range(args.batch_size)]
+
+    # Warmup：排除首次触发 CUDA 上下文初始化与 JIT 编译缓存对计时的干扰
+    _ = llm.generate(prompts, sampling, use_tqdm=False)
+    torch.cuda.synchronize()
+
+    times = []
+    total_tokens = 0
+    for _ in range(args.repeats):
+        t0 = time.perf_counter()
+        outs = llm.generate(prompts, sampling, use_tqdm=False)
+        torch.cuda.synchronize()
+        times.append((time.perf_counter() - t0) * 1000.0)
+        total_tokens = sum(len(o.outputs[0].token_ids) for o in outs)
+
+    avg_ms = sum(times) / len(times)
+    if args.batch_size == 1:
+        print(f"RESULT mode={args.mode} tokens={total_tokens} avg_total_ms={avg_ms:.2f} avg_per_token_ms={avg_ms/total_tokens:.2f} tok_per_s={total_tokens/(avg_ms/1000.0):.1f}")
+    else:
+        print(f"BATCH_RESULT mode={args.mode} batch={args.batch_size} total_tokens={total_tokens} elapsed_ms={avg_ms:.2f} sys_tok_per_s={total_tokens/(avg_ms/1000.0):.1f}")
+
+if __name__ == "__main__":
+    main()
+```
+
+- **多进程入口保护**：`if __name__ == "__main__":` 必须保留，vLLM V1 默认采用 `spawn` 模式创建 `EngineCore` 子进程，缺少主入口保护会在启动阶段触发 `RuntimeError`。
+- **三组开关含义**：`eager` 关闭融合与图捕获；`default` 打开 `torch.compile` 与 `FULL_AND_PIECEWISE` CUDA Graphs；`ngram` 额外启用最多前瞻 $5$ 步的 N-gram 投机解码。
+- **精确同步计时**：`torch.cuda.synchronize()` 保证所有 GPU 计算与采样彻底完成后再止表，防止 CPU 异步返回导致计时虚低。
+
+### 性能对比分析
+
+**在 `batch=1` 下，算子融合叠加 CUDA Graphs 将单请求耗时压缩至基线的约三成，叠加投机解码进一步压至一成多；而在 `batch=64` 下，投机解码总吞吐出现回落。**
+
+**第四步：运行单并发（`batch=1`）三组执行模式对照**
+
+```bash
+for m in eager default ngram; do
+  python bench_exec_modes.py --mode "$m" --batch-size 1 --repeats 5
+done
+```
+
+- **分进程独立测量**：每个 `--mode` 各自拉起独立 Python 进程，防止前一模式的显存缓存或图编译状态污染后续对比组；若模型已提前离线下载，可在命令前加 `HF_HUB_OFFLINE=1`。
+- **冷启动耗时**：`default` 与 `ngram` 在引擎初始化时会用十余秒到二十余秒完成图编译以及捕获各档位 CUDA Graph，Warmup 轮次会将其排除在稳态计时之外。
+
+**第五步：运行高并发（`batch=64`）拐点对照**
+
+```bash
+for m in default ngram; do
+  python bench_exec_modes.py --mode "$m" --batch-size 64
+done
+```
+
+- **对比意图**：当并发升至 $64$ 时，开启 $k=5$ 投机解码的验证矩阵总行数从 $64$ 放大至 $384$ 行，用于实测跨过硬件脊点后公式 (2) 预言的吞吐倒退现象。
+- **显存适配**：如在 $8\text{ GB}$ 显存设备上运行，可将脚本内的 `max_model_len` 调整为 `1024`。
+
+以下展示一组真实实测输出与汇总表（实测环境：**NVIDIA GeForce RTX 5070 12 GB**，**PyTorch `2.14.0+cu130`**，**CUDA `13.0`**，**vLLM `0.33.0`**，模型为 BF16 精度的 `Qwen3-0.6B`；不同硬件平台的绝对耗时有所差异，但三组模式间的相对倍率与并发拐点规律一致）：
+
+```text
+=== Running eager (batch=1, 5-run avg) ===
+WARNING ... Enforce eager set, disabling torch.compile, CUDAGraphs, and JIT kernel warmup.
+INFO ... Cudagraph is disabled under eager mode
+RESULT mode=eager tokens=128 avg_total_ms=1004.07 avg_per_token_ms=7.84 tok_per_s=127.5
+
+=== Running default (batch=1, 5-run avg) ===
+... compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, ... 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)> ...}
+INFO ... init engine (profile, create kv cache, warmup model) took 20.32 s (compilation: 10.42 s)
+RESULT mode=default tokens=128 avg_total_ms=331.15 avg_per_token_ms=2.59 tok_per_s=386.5
+
+=== Running ngram (batch=1, 5-run avg) ===
+... speculative_config=SpeculativeConfig(method='ngram', model=None, num_spec_tokens=5) ...
+INFO ... init engine (profile, create kv cache, warmup model) took 29.41 s (compilation: 10.44 s)
+RESULT mode=ngram tokens=128 avg_total_ms=128.79 avg_per_token_ms=1.01 tok_per_s=993.8
+
+=== Batch=64 High Concurrency Comparison ===
+BATCH_RESULT mode=default batch=64 total_tokens=8192 elapsed_ms=630.13 sys_tok_per_s=13000.5
+BATCH_RESULT mode=ngram batch=64 total_tokens=8192 elapsed_ms=670.47 sys_tok_per_s=12218.3
+```
+
+汇总为系统级对照表（观测口径：`torch.cuda.synchronize()` 包裹的单次端到端 `llm.generate()` 墙钟耗时，含 Prefill 与 128 步 Decode）：
+
+| 测试组与并发度 | 开启机制 | 平均总耗时 (ms) | 单词元均摊耗时 (ms/tok) | 系统输出吞吐 (tok/s) | 相对基线倍率 |
+|---|---|---:|---:|---:|---:|
+| `batch=1` Eager 基线 | 无编译融合、无 CUDA Graphs | 1004.07 | 7.84 | 127.5 | 1.00× |
+| `batch=1` Default 执行 | `torch.compile` + `FULL_AND_PIECEWISE` 图 | 331.15 | 2.59 | 386.5 | **3.03×** |
+| `batch=1` N-gram 投机 | Default + N-gram 投机（$k=5$） | 128.79 | 1.01 | 993.8 | **7.80×** |
+| `batch=64` Default 执行 | `torch.compile` + `FULL_AND_PIECEWISE` 图 | 630.13 | — | 13000.5 | 1.00× |
+| `batch=64` N-gram 投机 | Default + N-gram 投机（$k=5$） | 670.47 | — | 12218.3 | **0.94×（变慢）** |
+
+**执行结果分析与排查要点**：
+1. **`batch=1` 下 CUDA Graphs 与算子融合收益显著**：从 `eager` 切至 `default` 后，单词元均摊耗时由 $7.84\text{ ms}$ 降至 $2.59\text{ ms}$（$3.03\times$ 加速）。初始化阶段一次性消耗约 $10.4\text{ s}$ 完成编译与图捕获，进入稳态请求后该开销彻底摊销。
+2. **代码改写场景下投机解码再提速 $2.57\times$**：由于提示词内包含高度复用的函数模板，`ngram` 草稿命中率高，把 $128$ 词元总耗时进一步从 $331.15\text{ ms}$ 压到 $128.79\text{ ms}$。
+3. **`batch=64` 实证并发拐点**：高并发下关闭投机解码的 `default` 吞吐达到 $13000.5\text{ tok/s}$，而开启 $k=5$ 投机解码后验证开销使耗时升至 $670.47\text{ ms}$，系统总吞吐反而回落 $6.0\%$。
+4. **常见异常排查**：若报 `FileNotFoundError: 'ninja'`，检查虚拟环境 `bin` 目录是否已加入 `PATH`；若报 CUDA 编译器缺失，核查 `CUDA_HOME` 是否指向正确的 CUDA 安装路径（如 `/usr/local/cuda`）；若出现显存不足，调低 `gpu_memory_utilization` 并确认无其他进程占卡。
 
 ---
 
-## 投机解码：以验证并行性换取生成延迟
+## 小结
 
-算子融合降低了单步 HBM 搬运量，CUDA Graphs 消除了 CPU 调度气泡，这两项技术都在**压榨单步前向传播耗时**。但它们无法改变自回归解码的一个根本瓶颈：每一步前向传播，都必须把模型全部权重从 HBM 读进片上一次，而最终只能产出 **1 个** Token。
+无损执行与解码加速围绕 Decode 阶段的三道物理障碍展开：
 
-**投机解码（Speculative Decoding）**[^speculative] 从另一个维度打破了这一限制：**既然单步只算 1 个 Token 时 GPU 计算单元大量闲置，那能否在读取一次目标模型权重的同时，一口气验证多个候选 Token，让单步产出多个确定正确的 Token？**
+- **算子融合**针对 GPU 片外 HBM 带宽墙，将相邻算子合并入寄存器与片上 SRAM 完成直传，受制于单个 SM 的寄存器容量与占用率边界。
+- **CUDA Graphs** 针对 CPU 逐个下发造成的计算流气泡，用一次初始化 Capture 换取后续单次 Replay，依靠分桶填充与元数据静态化/分段图应对动态 Batch 与可变序列长度。
+- **投机解码**针对自回归单步权重复用率为 1 的结构瓶颈，在中小并发访存受限区内借用闲置算力并行验证多步草稿并保证分布无损，而在高并发计算受限区必须关闭以防吞吐倒退。
 
-![投机解码单轮 Draft-then-Verify 流程](/images/inference/execution-acceleration/speculative-decoding.svg)
-
-### 为什么验证 K 个 Token 与生成 1 个 Token 耗时接近
-
-回看我们在第一节推导的 Roofline 模型：在 H100 上，单请求 Decode（$B=1$）的算术强度约为 $1.0\text{ FLOP/Byte}$，距离脊点 $295.2\text{ FLOPs/Byte}$ 相差两个多数量级。
-
-这意味着，如果我们把送入目标大模型（Target Model）的序列输入从 $1$ 个 Token 变成 $\gamma + 1 = 5$ 个候选 Token（批量并行前向传播，并通过**因果掩码（Causal Mask）**[^causal-mask] 确保每个位置只关注其自身及更早的输入）：
-
-- 模型的权重矩阵 $W$ 依然只需要从 HBM **读取一次**；
-- 矩阵乘的浮点运算量虽然增大到原来的 5 倍（算术强度升至约 $5\text{ FLOPs/Byte}$），但它仍然远远处于脊点左侧的 **Memory-Bound 区域**！
-- 决定耗时的是那块 $33.55\text{ MB}$ 权重的搬运时间，而不是片上计算时间。因此，在中小 Batch 下，**目标模型并行验证 5 个 Token 的耗时几乎与生成 1 个 Token 相同**。
-
-### Draft-then-Verify 工作流程与数学无损性
-
-当然，大模型要想并行验证 5 个位置，必须先知道这几个位置“可能填什么词”。投机解码的每一轮执行分为三个严格步骤：
-
-1. **草稿生成（Drafting）**：使用一个成本极低的轻量级机制——**草稿模型（Draft Model）**（通常是一个小得多的同词表模型，或专门挂载在主干上的轻量级预测头），从当前已知前缀出发，快速自回归生成 $\gamma$ 个候选 Token $x_1, x_2, \dots, x_\gamma$，并记录草稿模型在每一步给出的概率分布 $q_1, q_2, \dots, q_\gamma$。
-2. **并行验证（Parallel Verification）**：将前缀末尾词连同这 $\gamma$ 个候选 Token 拼接成长度为 $\gamma + 1$ 的序列段，喂给**目标模型（Target Model）**。目标模型只需做 **1 次** 前向传播，即可并行计算出这 $\gamma + 1$ 个位置的精确概率分布 $p_1, p_2, \dots, p_\gamma, p_{\gamma+1}$。
-3. **逐位拒绝采样（Rejection Sampling）**：按顺序从 $i = 1$ 到 $\gamma$ 逐个校验候选 Token $x_i$，规则如下：
-   - 如果 $p_i(x_i) \ge q_i(x_i)$，说明目标模型比草稿模型更看好这个词，**直接接受 $x_i$**。
-   - 如果 $p_i(x_i) < q_i(x_i)$，则以概率 $\frac{p_i(x_i)}{q_i(x_i)}$ 接受 $x_i$，否则 **拒绝 $x_i$**。
-   - 一旦某个位置 $i$ 被拒绝，说明后续猜想的 $x_{i+1}, \dots, x_\gamma$ 是基于错误前缀生成的，必须全部作废；同时，在位置 $i$ 上，从修正残差分布 $p'_i(x) = \text{norm}(\max(0, p_i(x) - q_i(x)))$ 中重新采样一个新词 $x'_i$ 作为本位置最终输出，并终止本轮校验。
-   - 如果全部 $\gamma$ 个候选 Token 都通过了校验，那么目标模型在并行计算时顺带算出的第 $\gamma + 1$ 个位置分布 $p_{\gamma + 1}$ 也是现成的，直接从 $p_{\gamma + 1}$ 采样出第 $\gamma + 1$ 个词（**Bonus Token**）。
-
-换言之，每经过一轮“1 次草稿生成 + 1 次目标模型验证”，系统至少能保证产出 $1$ 个正确 Token（最坏情况第一个词就被拒，用 $p'_1$ 重采样），最多能一次性推进 $\gamma + 1$ 个 Token，并同步裁剪掉被拒绝位置之后对应的无效 KV Cache。
-
-**为什么这套机制能做到“数学严格无损”？**
-在温度采样（$T > 0$）下，我们可以直接验证任意位置输出某个词 $x$ 的总概率[^proof]：接受概率与拒绝重采样概率之和恰好等于 $\min(q_i(x), p_i(x)) + \max(0, p_i(x) - q_i(x)) = p_i(x)$。而在贪心解码（Greedy Decoding，$T = 0$）下，它等价于直接比对 $\text{argmax } p_i$ 与 $x_i$ 是否一致，不一致则替换为 $\text{argmax } p_i$。因此，无论草稿模型质量高低，最终输出序列的分布与单独运行目标模型在数学上 **100% 完全一致**。
-
-### 加速比的理论边界：何时有效，何时反而变慢
-
-投机解码并非在所有场景下都能带来加速。我们可以用三个关键参数直接写出它的期望端到端加速比边界：
-
-- **平均接收率 $\alpha \in (0, 1)$**：草稿模型猜出的词被目标模型接受的平均概率。
-- **草稿步长 $\gamma$**：每轮猜多少个词。
-- **单步草稿相对耗时 $c = T_{\text{draft}}(1) / T_{\text{target}}(1)$**：草稿模型生成 1 个词耗时与目标模型生成 1 个词耗时之比（通常要求 $c \ll 1$，例如 $0.02 \sim 0.1$）。
-- **目标模型验证膨胀系数 $r_{\text{verify}}(\gamma) = T_{\text{target}}(\gamma + 1) / T_{\text{target}}(1)$**：目标模型并行验证 $\gamma + 1$ 个词耗时与单步生成 1 个词耗时之比。
-
-在一轮内，若每个位置的接收事件近似独立，期望产出的净 Token 数为：
-
-$$
-\mathbb{E}[\text{Tokens}] = \sum_{k=0}^{\gamma} \alpha^k = \frac{1 - \alpha^{\gamma + 1}}{1 - \alpha}
-$$
-
-一轮的总耗时相对倍数为 $c \cdot \gamma + r_{\text{verify}}(\gamma)$，由此得到理论期望加速比：
-
-$$
-\text{Speedup} = \frac{1 - \alpha^{\gamma + 1}}{(1 - \alpha)\bigl(c \cdot \gamma + r_{\text{verify}}(\gamma)\bigr)}
-$$
-
-由这条公式可以立即推出工程落地的三条硬边界：
-
-1. **草稿质量与步长的权衡**：如果 $\alpha$ 较高（例如代码补全、模板化文本或高置信度推理场景，$\alpha \approx 0.8$），单轮期望产出接近 $3 \sim 4$ 个 Token，加速效果显著；如果任务高度发散导致 $\alpha$ 很低（如 $\alpha < 0.4$），加大 $\gamma$ 只会白白增加分子几乎不涨的无效草稿开销 $c \cdot \gamma$，此时加速比会迅速跌破 $1.0$（反而变慢）。因此许多引擎引入了动态 $\gamma$ 调整，在历史接收率低时自动缩短猜想长度。
-2. **草稿本身必须足够轻（$c \ll 1$）**：独立小模型不能过大，否则 $\gamma$ 步串行执行草稿模型加上其自身的 Kernel 启动开销，会抵消大部分加速收益。
-3. **高并发大 Batch Size 下加速比会迅速坍塌**：这是生产环境最常见的性能误区。在 $B=1$ 时，$r_{\text{verify}}(\gamma) \approx 1.0$；但当在线服务的连续批处理并发达到 $B = 64$ 或 $128$ 时，目标模型输入矩阵的总行数会乘以 $(\gamma + 1)$，迅速变成 $64 \times 5 = 320$ 行。此时算子已经跨过硬件脊点进入 Compute-Bound 区域（参见第一节的 Roofline 图），$r_{\text{verify}}(\gamma)$ 不再接近 $1$，而是向 $(\gamma + 1)$ 线性攀升。分母膨胀的倍数会直接抵消甚至反超分子上的 $\mathbb{E}[\text{Tokens}]$ 收益，导致投机解码不仅无法加速，还额外浪费了一倍以上的算力和 KV Cache 带宽。因此，**投机解码的核心适用场景是低并发、极度追求低 TPOT 延迟的请求**。
-
-### Draft 来源的演进方向
-
-为了同时压低相对耗时 $c$ 并提高接收率 $\alpha$，社区在“如何生成草稿”上经历了清晰的三代演进：
-
-- **第一代：独立小模型（Independent Draft Model）**：例如用同家族的 0.5B/1B 模型辅助 70B 大模型。优点是无需训练、开箱即用；缺点是小模型往往很难精准对齐大模型的长尾分布，且在多机多卡并行部署时需要额外维护一套独立模型的权重与 KV Cache。
-- **第二代：无辅助模型的轻量级多头预测（如 Medusa）**：不单独部署小模型，而是在大模型最后一层隐状态之上微调挂载 $\gamma$ 个轻量的线性预测头，一次前向同时预测未来多步。缺点是各个头独立预测互不知晓，彼此之间缺乏条件依赖，接收率受限。
-- **第三代：基于特征自回归与树状验证（如 EAGLE 系列）**：不再从词表层重启一个独立小模型，而是直接复用目标模型倒数第二层富含上下文语义的隐藏特征（Feature），配合一个极轻量的单层自回归层快速滚动生成候选树（Tree Attention Verification），在保持 $c$ 极低的同时大幅拉高接收率 $\alpha$，并可与 **CUDA Graphs** 结合实现微秒级草稿步进。
-
----
-
-## 三项技术的组合顺序与诊断清单
-
-在真实的推理引擎（例如 vLLM 或 SGLang）中，这三项技术并不是非此即彼的选择题，而是按 Bottleneck 逐层叠加的流水线。
-
-| 优化技术 | 解决的核心瓶颈 | 生效前提 | 工程代价与主要约束 |
-| :--- | :--- | :--- | :--- |
-| **算子融合** | HBM 带宽往返与相邻小 Kernel 开销 | 任意阶段（尤其 Decode 的 Norm/激活链与 Attention） | 增大单 Kernel 寄存器压力；算子变体多时需借助编译器（`torch.compile` / Triton） |
-| **CUDA Graphs** | CPU 侧逐个下发 Kernel 的调度延迟气泡 | 算子拓扑静态、形状可控（Decode 阶段最为明显） | 需预先分配静态缓冲池；需用分桶填充或分段图应对动态 Batch 与序列长度 |
-| **投机解码** | 单步仅产出 1 个 Token 导致的极低算术强度 | 系统处于 Memory-Bound（低/中并发 Batch）且接收率 $\alpha$ 足够高 | 大 Batch（Compute-Bound）下无效甚至负优化；树验证与拒绝采样增加调度复杂度 |
-
-在实际开展性能调优时，建议按照以下四步诊断顺序推进，避免盲目开启高复杂度特性：
-
-1. **先用 NVIDIA Nsight Systems（`nsys`）[^nsys] 抓取 Decode 阶段时间线**。如果看到 GPU 计算流上相邻 Kernel 之间存在明显空白间隙，且 CPU 线程处于 `cudaLaunchKernel` 密集调用中，说明系统存在明显的发射开销瓶颈。
-2. **优先确保算子融合与 CUDA Graphs 落地**。先通过引擎自带的融合算子（如 `FusedAddRMSNorm`、`FlashAttention`）压缩 HBM 往返并减少 Kernel 总数，再开启 CUDA Graphs（全图或分段图）消除剩余的发射间隙。这两步对于任意并发度下的单步耗时都有稳定收益，且不引入概率分支逻辑。
-3. **再用 NVIDIA Nsight Compute（`ncu`）[^ncu] 或 Roofline 分析确认是否仍处于 Memory-Bound**。观察业务高峰期的典型 Batch Size 下，GEMM/GEMV 算子的 Tensor Core 算力利用率与 HBM 带宽利用率。
-4. **仅在低延迟、低并发的 Memory-Bound 场景引入投机解码**。如果线上业务长期处于小 Batch 交互模式（如本地代码助手、个人 Agent、低并发专用服务），此时引入投机解码（或 EAGLE 类轻量级草稿机制）可以把单步 TPOT 再降低 $1.5 \times \sim 2.5 \times$；如果业务核心指标是高并发吞吐量（Batch 经常拉满至 Compute-Bound 平台区），则应关闭投机解码，把全部算力留给真实用户的并行批处理。
+实际性能调优时，应先使用系统级时间线分析工具 **NVIDIA Nsight Systems（`nsys`）** 排查发射间隙并优先落地算子融合与 CUDA Graphs，再结合业务高峰并发度所处的 Roofline 位置决定是否启用投机解码。
 
 ---
 
 ## 延伸阅读
 
-- **投机解码开山论文（Google Research）**：Yaniv Leviathan, Matan Kalman, Yossi Matias. [*Fast Inference from Transformers via Speculative Decoding*](https://arxiv.org/abs/2211.17192) (ICML 2023 Oral). 系统性提出了 Draft-then-Verify 框架、拒绝采样等价性证明及理论加速比公式。
-- **同期独立工作（DeepMind）**：Charlie Chen et al. [*Accelerating Large Language Model Decoding with Speculative Sampling*](https://arxiv.org/abs/2302.01318) (2023). 在 70B Chinchilla 模型上详细验证了 2–2.5× 解码加速及与张量并行的结合方式。
-- **特征级自回归投机解码**：Yuhui Li et al. [*EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty*](https://arxiv.org/abs/2401.15077) (ICML 2024). 阐述了如何从特征层而非词表层做轻量草稿预测以突破接收率上限。
-- **CUDA Graphs 官方文档与 PyTorch 实践**：
-  - [NVIDIA CUDA Programming Guide — CUDA Graphs](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)
-  - [Accelerating PyTorch with CUDA Graphs (PyTorch Official Blog)](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)
-- **算子融合与自动编译实战**：
-  - [Triton Tutorials: Fused Softmax](https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html) — 从零对比 PyTorch 原生操作与单 Kernel SRAM 驻留融合的经典入门教程。
-  - [PyTorch `torch.compiler` User Guide](https://pytorch.org/docs/stable/user_guide/torch_compiler.html) — 了解 TorchInductor 如何自动完成计算图切分与 Triton Kernel 融合。
-- **推理引擎生产级实现参考**：
-  - [vLLM Documentation](https://docs.vllm.ai/en/stable/) — 可查阅其中关于 `torch.compile` 集成及 `PIECEWISE` / `FULL` CUDA Graph 模式的工程设计细节。
-
-[^kv-cache]: **KV Cache（键值缓存）**：自回归生成过程中，Transformer 每一层都会把历史所有 Token 计算得到的 Key 和 Value 向量缓存在显存中，从而避免每生成新 Token 时重复计算历史前缀的投影。它在消除了重复计算的同时，也使 Decode 阶段每次 Attention 计算都必须把庞大的历史 KV 张量从显存重新读取一遍。
-[^roofline]: **Roofline 模型（屋顶线模型）**：一种把硬件算力峰值（FLOPS，水平屋顶线）与显存带宽上限（Bytes/s，斜屋顶线）画在对数坐标系上的性能分析模型。斜线与水平线的交点称为 **脊点（Ridge Point）**，其横坐标等于“峰值算力 / 显存带宽”。算术强度低于脊点的算子受限于带宽斜线（Memory-Bound），高于脊点的算子受限于水平算力线（Compute-Bound）。
-[^hbm]: **HBM（High Bandwidth Memory）**：通过硅通孔（TSV）与中介层（Interposer）紧邻 GPU 计算芯片封装的高带宽堆叠显存。它是目前大容量 GPU 的主显存，容量可达数十至上百 GB，但相比芯片内部的 SRAM 仍属于“片外存储”。
-[^gemv]: **GEMM 与 GEMV**：GEMM 指两个矩阵相乘（$M \times K$ 乘以 $K \times N$），当矩阵行数 $M$ 足够大时，权重矩阵 $K \times N$ 中的每个元素可以被多次复用；GEMV 指向量与矩阵相乘（$1 \times K$ 乘以 $K \times N$），权重元素读入后仅参与一次内积累加，无法摊薄访存成本。
-[^eager]: **Eager 模式（即时执行模式）**：PyTorch 默认的执行方式。CPU 每执行到一行算子代码，就立即向 GPU 提交对应任务并返回，方便调试和动态控制流，但在包含数百个微秒级小算子的循环中会积累显著的 CPU 调度开销。
-[^kernel]: **Kernel（核函数）与 Kernel Launch Overhead**：Kernel 是在 GPU 上并行执行的函数实体。每次 CPU 通过 CUDA Runtime API（如 `cudaLaunchKernel`）向 GPU 提交一个 Kernel，都需要经过参数打包、用户态到内核态/驱动队列写入、硬件命令处理器解析等步骤，这段耗时在微秒级，与 Kernel 本身的计算量无关。
-[^sram]: **寄存器（Registers）与 Shared Memory（片上共享内存）**：位于 GPU 每个流式多处理器（SM）内部的片上高速存储。寄存器为单线程私有，访问延迟接近零；Shared Memory 由同一线程块（Thread Block）内的线程共享，本质上是可编程管理的片上 SRAM，用于线程间高效交换中间结果，避免回写 HBM。
-[^triton]: **Triton**：由 OpenAI 开源的面向 GPU 的 Python 领域特定语言（DSL）与编译器。开发者无需手写繁琐的 CUDA C++ 线程索引与 Shared Memory 同步原语，只需以数据块（Block）为单位编写计算逻辑，即可生成接近手写 CUDA 性能的融合 Kernel。
-[^occupancy]: **占用率（Occupancy）与寄存器压力**：占用率指单个 SM 上实际活跃的线程束（Warp）数量与硬件支持上限的比值。高占用率有助于隐藏显存访存延迟。如果单个融合 Kernel 使用了过多局部变量，编译器分配的每线程寄存器数升高，受限于 SM 固定总寄存器池大小，硬件能同时调度的线程块数量就会减少，从而拉低占用率。
-[^cudagraphs]: **CUDA Graphs**：NVIDIA CUDA 10 引入的执行抽象。它把一系列依赖明确的 GPU 操作（Kernel 启动、显存拷贝、事件同步等）及其固定内存地址预先组织成静态图结构，将原本分散在运行时的 CPU 驱动调度工作前移至初始化录制阶段。
-[^speculative]: **投机解码（Speculative Decoding）**：又称 Speculative Sampling。它借鉴计算机体系结构中 CPU 分支预测与投机执行的思想：先低成本猜想后续结果，再由高成本主单元一次并行验证，猜对直接跳过多步串行，猜错则回退修正。
-[^proof]: **拒绝采样分布等价性简证**：设目标分布为 $p(x)$，草稿分布为 $q(x)$。单个位置接受 $x$ 的概率为 $q(x) \cdot \min\bigl(1, \frac{p(x)}{q(x)}\bigr) = \min(q(x), p(x))$。由此可得该位置发生拒绝的总概率为 $\beta = 1 - \sum_y \min(q(y), p(y)) = \sum_y \max(0, p(y) - q(y))$。一旦发生拒绝，算法从归一化残差分布 $p'(x) = \frac{\max(0, p(x) - q(x))}{\beta}$ 中重采样。将接受与拒绝重采样两条路径的概率相加，输出任意词 $x$ 的边际概率为 $\min(q(x), p(x)) + \beta \cdot \frac{\max(0, p(x) - q(x))}{\beta} = \min(q(x), p(x)) + \max(0, p(x) - q(x)) = p(x)$，与目标模型原分布严格一致。
-[^nsys]: **NVIDIA Nsight Systems（`nsys`）**：NVIDIA 官方提供的系统级性能分析工具，能够将 CPU 侧线程活动（Python 调用栈、CUDA API 调用）与 GPU 侧各 Stream 上每个 Kernel 的实际起止时间精确对齐到同一条时间线上，是排查 Kernel 启动空泡的首选工具。
-[^ncu]: **NVIDIA Nsight Compute（`ncu`）**：NVIDIA 官方提供的核函数级剖析工具，用于深入采集单个 CUDA Kernel 内部的 Tensor Core 利用率、HBM 带宽占用率、寄存器分配数量与 SM 占用率，并直接生成对应的 Roofline 分析图。
-[^continuous-batching]: **连续批处理（Continuous Batching）**：也称 Iteration-level Scheduling。推理引擎不再等待整批请求全部生成完毕才接纳新请求，而是在每一个 Decode 步结束后立即剔除已完成的请求并插入新到达的请求，从而保持高并发槽位利用率。
-[^chunked-prefill]: **分块预填充（Chunked Prefill）**：当新到达请求的长提示词过长时，若一次性执行完整 Prefill 会阻塞同卡上正在进行的 Decode 请求。分块预填充将长提示词切分为若干固定大小的块，与正在解码的请求拼接在同一个批次中交替推进，以稳定 TPOT 延迟。
-[^causal-mask]: **因果掩码（Causal Mask）**：在注意力矩阵计算中施加的下三角掩码，保证序列第 $i$ 个位置只能计算与 $1 \sim i$ 位置之间的注意力权重，屏蔽 $i$ 之后的所有未来位置，从而使并行输入的 $\gamma + 1$ 个位置互不干扰，与逐个串行输入得到完全一致的隐状态。
+- **投机解码奠基论文**：Yaniv Leviathan et al. [*Fast Inference from Transformers via Speculative Decoding*](https://arxiv.org/abs/2211.17192) (ICML 2023)；Charlie Chen et al. [*Accelerating Large Language Model Decoding with Speculative Sampling*](https://arxiv.org/abs/2302.01318) (2023)。
+- **代表性投机架构论文**：Tianle Cai et al. [*Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads*](https://arxiv.org/abs/2401.10774) (ICML 2024)；Yuhui Li et al. [*EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test*](https://arxiv.org/abs/2503.01840) (2025)。
+- **CUDA Graphs 与 Roofline 官方文档**：[CUDA Programming Guide — CUDA Graphs](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html) · [How to Scale Your Model — Roofline](https://jax-ml.github.io/scaling-book/roofline/)。
+- **算子融合与编译实战**：[Triton Tutorials: Fused Softmax](https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html) · [PyTorch `torch.compiler` User Guide](https://pytorch.org/docs/stable/user_guide/torch_compiler.html) · [Accelerating PyTorch with CUDA Graphs](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)。
+- **推理引擎与中文课程**：[vLLM Speculative Decoding Docs](https://docs.vllm.ai/en/latest/features/speculative_decoding/) · [Datawhale × RadixArk · zero-to-sglang 第 10 章：投机解码](https://github.com/datawhalechina/zero-to-sglang/blob/main/course-material/ch/part2/%E7%AC%AC10%E7%AB%A0_%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81.md)。

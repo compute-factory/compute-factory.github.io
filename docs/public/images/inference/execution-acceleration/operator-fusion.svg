@@ -1,125 +1,121 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="960" height="460">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+
   <defs>
-    <style>
-      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif; }
-      .title { font-size: 20px; font-weight: 700; fill: #0f172a; }
-      .sec-title { font-size: 15px; font-weight: 700; }
-      .box-title { font-size: 13px; font-weight: 700; }
-      .body { font-size: 12px; fill: #334155; }
-      .label { font-size: 11px; font-weight: 600; }
-    </style>
-    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626" />
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <marker id="arr-warm" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8c8270" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
-    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0d9488" />
+    <marker id="arr-red" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
-    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+    <marker id="arr-teal" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
   </defs>
 
-  <rect width="960" height="460" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
-  <text x="480" y="34" text-anchor="middle" class="title">算子融合对比：以 Residual Add + RMSNorm 为例</text>
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+  <text x="52" y="56" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">Operator Fusion · Residual Add + RMSNorm</text>
+  <text x="52" y="88" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">算子融合：消除中间张量的 HBM 往返</text>
 
   <!-- Panel 1: Unfused -->
-  <rect x="28" y="54" width="904" height="184" rx="10" fill="#ffffff" stroke="#fecaca" stroke-width="1.5" />
-  <rect x="44" y="68" width="376" height="26" rx="5" fill="#fef2f2" />
-  <text x="56" y="86" class="sec-title" fill="#b91c1c">未融合模式：2 次 Kernel 启动，多次 HBM 往返</text>
-  <text x="912" y="86" text-anchor="end" class="label" fill="#dc2626">中间结果 sum_buf 必须落回 HBM 再读出</text>
+  <rect x="52" y="116" width="1016" height="218" rx="18" fill="#fffefb" stroke="#fecaca" stroke-width="1.5" />
+  <rect x="74" y="132" width="356" height="30" rx="9" fill="#fef2f2" />
+  <text x="252" y="152" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#b91c1c">未融合模式：2 次 Kernel 启动，总流量 5S</text>
+  <text x="1044" y="152" text-anchor="end" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#b91c1c">中间张量 sum_buf 必须落回 HBM 再重读</text>
 
-  <!-- HBM Inputs -->
-  <rect x="46" y="114" width="118" height="84" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4" />
-  <text x="105" y="138" text-anchor="middle" class="box-title" fill="#1d4ed8">HBM 显存</text>
-  <text x="105" y="160" text-anchor="middle" class="body">x（隐状态）</text>
-  <text x="105" y="178" text-anchor="middle" class="body">residual（残差）</text>
+  <rect x="74" y="186" width="142" height="96" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="145" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">HBM 显存</text>
+  <text x="145" y="242" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">x（隐状态）</text>
+  <text x="145" y="264" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">residual（残差）</text>
 
-  <!-- Arrow to Kernel 1 -->
-  <line x1="164" y1="156" x2="210" y2="156" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr-red)" />
-  <text x="187" y="146" text-anchor="middle" class="label" fill="#dc2626">读</text>
+  <line x1="216" y1="234" x2="262" y2="234" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-red)" />
+  <text x="239" y="222" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#dc2626">读</text>
 
-  <!-- Kernel 1 -->
-  <rect x="214" y="114" width="150" height="84" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" />
-  <text x="289" y="138" text-anchor="middle" class="box-title" fill="#c2410c">Kernel 1: Add</text>
-  <text x="289" y="160" text-anchor="middle" class="body">寄存器内计算</text>
-  <text x="289" y="178" text-anchor="middle" class="body">sum = x + residual</text>
+  <rect x="268" y="186" width="166" height="96" rx="14" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4" />
+  <text x="351" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#c2410c">Kernel 1: Add</text>
+  <text x="351" y="242" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">寄存器内计算</text>
+  <text x="351" y="264" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12" font-weight="400" fill="#9a3412">sum = x + residual</text>
 
-  <!-- Arrow to HBM Middle -->
-  <line x1="364" y1="156" x2="412" y2="156" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr-red)" />
-  <text x="388" y="146" text-anchor="middle" class="label" fill="#dc2626">写回</text>
+  <line x1="434" y1="234" x2="484" y2="234" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-red)" />
+  <text x="459" y="222" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#dc2626">写回</text>
 
-  <!-- HBM Middle (Wasted round-trip) -->
-  <rect x="416" y="114" width="132" height="84" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3" />
-  <text x="482" y="138" text-anchor="middle" class="box-title" fill="#b91c1c">HBM 中间张量</text>
-  <text x="482" y="160" text-anchor="middle" class="body">sum_buf</text>
-  <text x="482" y="178" text-anchor="middle" class="label" fill="#dc2626">额外显存往返开销</text>
+  <rect x="490" y="186" width="146" height="96" rx="14" fill="url(#soft-hatch-red)" stroke="#f87171" stroke-width="1.4" stroke-dasharray="5,4" />
+  <text x="563" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#b91c1c">HBM 中间张量</text>
+  <text x="563" y="242" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#7f1d1d">sum_buf</text>
+  <text x="563" y="264" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#dc2626">额外跨总线往返</text>
 
-  <!-- Arrow to Kernel 2 -->
-  <line x1="548" y1="156" x2="594" y2="156" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr-red)" />
-  <text x="571" y="146" text-anchor="middle" class="label" fill="#dc2626">重读</text>
+  <line x1="636" y1="234" x2="686" y2="234" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-red)" />
+  <text x="661" y="222" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#dc2626">重读</text>
 
-  <!-- Kernel 2 -->
-  <rect x="598" y="114" width="154" height="84" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.5" />
-  <text x="675" y="138" text-anchor="middle" class="box-title" fill="#c2410c">Kernel 2: RMSNorm</text>
-  <text x="675" y="160" text-anchor="middle" class="body">求平方和归约 + 归一化</text>
-  <text x="675" y="178" text-anchor="middle" class="body">乘权重 γ</text>
+  <rect x="692" y="186" width="168" height="96" rx="14" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4" />
+  <text x="776" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#c2410c">Kernel 2: RMSNorm</text>
+  <text x="776" y="242" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">平方和归约 + 归一化</text>
+  <text x="776" y="264" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">乘以缩放权重 γ</text>
 
-  <!-- Arrow to HBM Output -->
-  <line x1="752" y1="156" x2="798" y2="156" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr-red)" />
-  <text x="775" y="146" text-anchor="middle" class="label" fill="#dc2626">写回</text>
+  <line x1="860" y1="234" x2="906" y2="234" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-red)" />
+  <text x="883" y="222" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#dc2626">写回</text>
 
-  <!-- HBM Outputs -->
-  <rect x="802" y="114" width="112" height="84" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4" />
-  <text x="858" y="138" text-anchor="middle" class="box-title" fill="#1d4ed8">HBM 显存</text>
-  <text x="858" y="160" text-anchor="middle" class="body">norm_out</text>
-  <text x="858" y="178" text-anchor="middle" class="body">新 residual</text>
+  <rect x="912" y="186" width="134" height="96" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="979" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">HBM 显存</text>
+  <text x="979" y="242" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12" font-weight="400" fill="#4a453b">norm_out</text>
+  <text x="979" y="264" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#4a453b">新 residual</text>
 
-  <text x="480" y="224" text-anchor="middle" class="label" fill="#64748b">说明：每次跨越 HBM 都要经过约 3.35 TB/s（以 H100 为例）的显存总线，且 Kernel 1 与 Kernel 2 之间存在启动延迟</text>
+  <text x="560" y="314" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#736a58">每次跨越 HBM 都要占用宝贵显存带宽，且两个 Kernel 之间存在 CPU 调度启动延迟</text>
 
   <!-- Panel 2: Fused -->
-  <rect x="28" y="254" width="904" height="186" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.5" />
-  <rect x="44" y="268" width="386" height="26" rx="5" fill="#f0fdfa" />
-  <text x="56" y="286" class="sec-title" fill="#0f766e">融合模式：1 次 Kernel 启动，中间结果片上直传</text>
-  <text x="912" y="286" text-anchor="end" class="label" fill="#0f766e">sum 直接留在寄存器与 Shared Memory 中</text>
+  <rect x="52" y="354" width="1016" height="224" rx="18" fill="#fffefb" stroke="#99f6e4" stroke-width="1.5" />
+  <rect x="74" y="370" width="356" height="30" rx="9" fill="#f0fdfa" />
+  <text x="252" y="390" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#0f766e">融合模式：1 次 Kernel 启动，总流量 4S</text>
+  <text x="1044" y="390" text-anchor="end" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#0f766e">sum 直接留在寄存器与片上 SRAM 中</text>
 
-  <!-- HBM Input Fused -->
-  <rect x="46" y="314" width="144" height="92" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4" />
-  <text x="118" y="338" text-anchor="middle" class="box-title" fill="#1d4ed8">HBM 显存</text>
-  <text x="118" y="360" text-anchor="middle" class="body">x（隐状态）</text>
-  <text x="118" y="378" text-anchor="middle" class="body">residual（残差）</text>
-  <text x="118" y="396" text-anchor="middle" class="body">weight γ（向量权重）</text>
+  <rect x="74" y="424" width="166" height="106" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="157" y="454" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">HBM 显存</text>
+  <text x="157" y="478" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">x（隐状态）</text>
+  <text x="157" y="500" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">residual（残差）</text>
+  <text x="157" y="520" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#736a58">weight γ</text>
 
-  <!-- Arrow into Fused Kernel -->
-  <line x1="190" y1="360" x2="246" y2="360" stroke="#0d9488" stroke-width="2" marker-end="url(#arr-teal)" />
-  <text x="218" y="350" text-anchor="middle" class="label" fill="#0f766e">读一次</text>
+  <line x1="240" y1="477" x2="296" y2="477" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+  <text x="268" y="465" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#0f766e">读一次</text>
 
   <!-- Fused Kernel Container -->
-  <rect x="250" y="308" width="460" height="104" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.8" />
-  <text x="480" y="330" text-anchor="middle" class="box-title" fill="#0f766e">单个融合 Kernel：FusedAddRMSNorm（片上寄存器 + Shared Memory）</text>
+  <rect x="302" y="416" width="516" height="122" rx="16" fill="#f0fdfa" stroke="#2dd4bf" stroke-width="1.6" />
+  <text x="560" y="442" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#0f766e">单个融合 Kernel：FusedAddRMSNorm（片上寄存器 + SRAM）</text>
 
-  <!-- Step A inside Fused -->
-  <rect x="270" y="344" width="176" height="54" rx="6" fill="#ffffff" stroke="#5eead4" stroke-width="1.2" />
-  <text x="358" y="366" text-anchor="middle" class="box-title" fill="#0f766e">1. 寄存器内相加</text>
-  <text x="358" y="386" text-anchor="middle" class="body">sum = x + residual</text>
+  <rect x="326" y="458" width="194" height="64" rx="12" fill="#ffffff" stroke="#99f6e4" stroke-width="1.3" />
+  <text x="423" y="484" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">1. 寄存器内相加</text>
+  <text x="423" y="506" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12" font-weight="400" fill="#4a453b">sum = x + residual</text>
 
-  <!-- Internal Fast Link -->
-  <line x1="446" y1="371" x2="496" y2="371" stroke="#0d9488" stroke-width="2" marker-end="url(#arr-teal)" />
-  <text x="471" y="361" text-anchor="middle" class="label" fill="#0f766e">片上直传</text>
+  <line x1="520" y1="490" x2="580" y2="490" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+  <text x="550" y="478" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#0f766e">片上直传</text>
 
-  <!-- Step B inside Fused -->
-  <rect x="500" y="344" width="190" height="54" rx="6" fill="#ffffff" stroke="#5eead4" stroke-width="1.2" />
-  <text x="595" y="366" text-anchor="middle" class="box-title" fill="#0f766e">2. 紧接完成 RMSNorm</text>
-  <text x="595" y="386" text-anchor="middle" class="body">Warp/Block 归约 + 乘 γ</text>
+  <rect x="586" y="458" width="208" height="64" rx="12" fill="#ffffff" stroke="#99f6e4" stroke-width="1.3" />
+  <text x="690" y="484" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">2. 紧接完成 RMSNorm</text>
+  <text x="690" y="506" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#4a453b">Block 归约 + 乘权重 γ</text>
 
-  <!-- Arrow out of Fused Kernel -->
-  <line x1="710" y1="360" x2="764" y2="360" stroke="#0d9488" stroke-width="2" marker-end="url(#arr-teal)" />
-  <text x="737" y="350" text-anchor="middle" class="label" fill="#0f766e">写一次</text>
+  <line x1="818" y1="477" x2="874" y2="477" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+  <text x="846" y="465" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#0f766e">写一次</text>
 
-  <!-- HBM Output Fused -->
-  <rect x="768" y="314" width="146" height="92" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4" />
-  <text x="841" y="338" text-anchor="middle" class="box-title" fill="#1d4ed8">HBM 显存</text>
-  <text x="841" y="362" text-anchor="middle" class="body">norm_out</text>
-  <text x="841" y="382" text-anchor="middle" class="body">更新后的 residual</text>
+  <rect x="880" y="424" width="166" height="106" rx="14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="963" y="458" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">HBM 显存</text>
+  <text x="963" y="484" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#4a453b">norm_out</text>
+  <text x="963" y="508" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#4a453b">更新后的 residual</text>
 
-  <text x="480" y="428" text-anchor="middle" class="label" fill="#0f766e">收益：消除 sum_buf 的 HBM 读写往返，单次启动完成全部计算（片上访存带宽比 HBM 高出一个数量级以上）</text>
+  <text x="560" y="560" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#0f766e">收益：消除 sum_buf 的 HBM 往返流量，片上 SRAM 与寄存器带宽比 HBM 高出一个数量级以上</text>
+
 </svg>

@@ -1,109 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+
   <defs>
-    <style>
-      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif; }
-      .title { font-size: 20px; font-weight: 700; fill: #0f172a; }
-      .axis { font-size: 13px; font-weight: 700; fill: #334155; }
-      .tick { font-size: 11px; fill: #64748b; }
-      .label { font-size: 12px; font-weight: 700; }
-      .body { font-size: 12px; fill: #334155; }
-    </style>
-    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed" />
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <marker id="arr-warm" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8c8270" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
-    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+    <marker id="arr-red" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
     </marker>
   </defs>
 
-  <rect width="960" height="440" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
-  <text x="480" y="34" text-anchor="middle" class="title">Roofline 视角：小 Batch Decode 与大 Batch 的性能边界（H100 FP16）</text>
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+  <text x="52" y="56" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">Roofline Model · H100 FP16 Reference</text>
+  <text x="52" y="88" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">Roofline 视角：小 Batch 与大 Batch Decode 的性能边界</text>
 
-  <!-- Plot Area: x=95..620, y=75..365 -->
-  <rect x="95" y="70" width="535" height="300" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+  <!-- Plot Area: x=116..746, y=120..520 -->
+  <rect x="116" y="120" width="630" height="400" rx="14" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <!-- Region tinting -->
+  <rect x="117" y="121" width="378" height="398" rx="13" fill="#fef2f2" opacity="0.45" />
+  <rect x="495" y="121" width="250" height="398" rx="13" fill="#eff6ff" opacity="0.48" />
 
-  <!-- Region shading -->
-  <!-- Ridge point at x=420, y=115 -->
-  <rect x="95" y="70" width="325" height="300" fill="#fef2f2" opacity="0.45" />
-  <rect x="420" y="70" width="210" height="300" fill="#eff6ff" opacity="0.45" />
+  <text x="306" y="150" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#b91c1c">访存受限区 (Memory-Bound)</text>
+  <text x="620" y="150" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">计算受限区 (Compute-Bound)</text>
 
-  <text x="245" y="94" text-anchor="middle" class="label" fill="#b91c1c">访存受限区（Memory-Bound）</text>
-  <text x="525" y="94" text-anchor="middle" class="label" fill="#1d4ed8">计算受限区（Compute-Bound）</text>
-
-  <!-- Gridlines -->
-  <line x1="95" y1="310" x2="630" y2="310" stroke="#f1f5f9" stroke-width="1" />
-  <line x1="95" y1="245" x2="630" y2="245" stroke="#f1f5f9" stroke-width="1" />
-  <line x1="95" y1="180" x2="630" y2="180" stroke="#f1f5f9" stroke-width="1" />
-  <line x1="95" y1="115" x2="630" y2="115" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3" />
+  <!-- Subtle horizontal gridlines -->
+  <line x1="116" y1="450" x2="746" y2="450" stroke="#ebe3d0" stroke-width="1" stroke-opacity="0.6" />
+  <line x1="116" y1="365" x2="746" y2="365" stroke="#ebe3d0" stroke-width="1" stroke-opacity="0.6" />
+  <line x1="116" y1="280" x2="746" y2="280" stroke="#ebe3d0" stroke-width="1" stroke-opacity="0.6" />
+  <line x1="116" y1="196" x2="746" y2="196" stroke="#d9d0bd" stroke-width="1" stroke-dasharray="5,4" />
 
   <!-- Ridge vertical dashed line -->
-  <line x1="420" y1="70" x2="420" y2="370" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5,4" />
-  <text x="420" y="390" text-anchor="middle" class="tick" font-weight="700" fill="#0f172a">脊点 ≈ 295 FLOPs/Byte</text>
+  <line x1="495" y1="120" x2="495" y2="520" stroke="#8c8270" stroke-width="1.4" stroke-dasharray="5,4" />
+  <text x="495" y="544" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#222018">脊点 ≈ 295 FLOPs/Byte</text>
 
   <!-- Axes -->
-  <line x1="95" y1="370" x2="630" y2="370" stroke="#334155" stroke-width="1.8" />
-  <line x1="95" y1="70" x2="95" y2="370" stroke="#334155" stroke-width="1.8" />
+  <line x1="116" y1="520" x2="746" y2="520" stroke="#4a453b" stroke-width="1.8" stroke-linecap="round" />
+  <line x1="116" y1="120" x2="116" y2="520" stroke="#4a453b" stroke-width="1.8" stroke-linecap="round" />
 
-  <!-- X-axis labels -->
-  <text x="135" y="390" text-anchor="middle" class="tick">1</text>
-  <text x="235" y="390" text-anchor="middle" class="tick">10</text>
-  <text x="335" y="390" text-anchor="middle" class="tick">100</text>
-  <text x="545" y="390" text-anchor="middle" class="tick">1000+</text>
-  <text x="362" y="418" text-anchor="middle" class="axis">算术强度 Arithmetic Intensity（FLOPs / Byte，对数刻度）</text>
+  <!-- X ticks -->
+  <text x="166" y="544" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">1</text>
+  <text x="290" y="544" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">10</text>
+  <text x="415" y="544" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">100</text>
+  <text x="640" y="544" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">1000+</text>
+  <text x="431" y="574" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#4a453b">算术强度 Arithmetic Intensity (FLOPs/Byte，对数刻度)</text>
 
-  <!-- Y-axis labels -->
-  <text x="86" y="314" text-anchor="end" class="tick">~3.35</text>
-  <text x="86" y="249" text-anchor="end" class="tick">~33.5</text>
-  <text x="86" y="184" text-anchor="end" class="tick">~335</text>
-  <text x="86" y="119" text-anchor="end" class="tick">989</text>
-  <text x="30" y="220" text-anchor="middle" transform="rotate(-90 30 220)" class="axis">可达算力（TFLOPS）</text>
+  <!-- Y ticks -->
+  <text x="106" y="454" text-anchor="end" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">~3.35</text>
+  <text x="106" y="369" text-anchor="end" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">~33.5</text>
+  <text x="106" y="284" text-anchor="end" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">~335</text>
+  <text x="106" y="200" text-anchor="end" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="400" fill="#736a58">989</text>
+  <text x="48" y="320" text-anchor="middle" transform="rotate(-90 48 320)" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#4a453b">可达算力 (TFLOPS)</text>
 
-  <!-- Roofline Curve: Slope from (135, 310) -> (420, 115) -> horizontal (615, 115) -->
-  <!-- Wait: check slope consistency! (420-135)=285 dx, (310-115)=195 dy. At x=205 (dx=70), y = 310 - 70*(195/285) = 262. -->
-  <polyline points="110,327 420,115 615,115" fill="none" stroke="#0f172a" stroke-width="3.2" stroke-linejoin="round" />
+  <!-- Roofline Curve: (132, 476) -> (495, 196) -> (728, 196) -->
+  <polyline points="132,476 495,196 728,196" fill="none" stroke="#222018" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 
-  <!-- Slope label -->
-  <text x="336" y="206" text-anchor="middle" transform="rotate(-34 336 206)" class="label" fill="#0f172a">带宽上限斜线：3.35 TB/s</text>
-  <text x="520" y="108" text-anchor="middle" class="label" fill="#0f172a">FP16 算力上限：989 TFLOPS</text>
+  <!-- Slope label cleanly below the slope line -->
+  <text x="386" y="318" text-anchor="middle" transform="rotate(-37.5 386 318)" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#222018">带宽上限：3.35 TB/s</text>
+  <text x="615" y="182" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#222018">FP16 算力上限：989 TFLOPS</text>
 
-  <!-- Point 1: Standard Decode Batch=1 -->
-  <circle cx="135" cy="310" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2" />
-  <rect x="148" y="312" width="166" height="44" rx="6" fill="#fef2f2" stroke="#fca5a5" />
-  <text x="231" y="330" text-anchor="middle" class="label" fill="#b91c1c">常规 Decode (B=1)</text>
-  <text x="231" y="347" text-anchor="middle" class="tick" fill="#991b1b">AI ≈ 1，算力利用率 &lt; 0.5%</text>
+  <!-- Point 1: Standard Decode (B=1, AI≈1) on slope at (166, 450) -->
+  <circle cx="166" cy="450" r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2" />
+  <rect x="190" y="448" width="186" height="54" rx="12" fill="#ffffff" stroke="#fca5a5" stroke-width="1.3" />
+  <text x="283" y="471" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#b91c1c">(1) 常规 Decode (B=1)</text>
+  <text x="283" y="491" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#7f1d1d">AI ≈ 1，算力利用率 &lt; 0.35%</text>
+  <line x1="173" y1="454" x2="190" y2="466" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round" />
 
-  <!-- Arrow from Point 1 to Point 2 (Speculative Decoding) -->
-  <path d="M 142 303 Q 170 272 204 263" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arr-purple)" />
+  <!-- Dashed curved arrow (1) -> (2) -->
+  <path d="M 173 441 C 204 408, 228 386, 256 368" fill="none" stroke="#8b5cf6" stroke-width="1.9" stroke-dasharray="5,4" stroke-linecap="round" marker-end="url(#arr-purple)" />
 
-  <!-- Point 2: Speculative Decoding (B=1, gamma=4~5) -->
-  <circle cx="212" cy="257" r="7" fill="#7c3aed" stroke="#ffffff" stroke-width="2" />
-  <rect x="108" y="160" width="178" height="46" rx="6" fill="#f5f3ff" stroke="#c4b5fd" />
-  <text x="197" y="179" text-anchor="middle" class="label" fill="#6d28d9">投机解码并行验证</text>
-  <text x="197" y="197" text-anchor="middle" class="tick" fill="#5b21b6">读 1 次权重算多个 Token</text>
-  <line x1="197" y1="206" x2="210" y2="250" stroke="#7c3aed" stroke-width="1.2" />
+  <!-- Point 2: Speculative Decoding on slope at (266, 372) -->
+  <circle cx="266" cy="372" r="7" fill="#7c3aed" stroke="#ffffff" stroke-width="2" />
+  <rect x="134" y="232" width="198" height="54" rx="12" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.3" />
+  <text x="233" y="255" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#6d28d9">(2) 投机解码并行验证</text>
+  <text x="233" y="275" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#4c1d95">读 1 次权重验证多个词元</text>
+  <line x1="242" y1="286" x2="263" y2="365" stroke="#8b5cf6" stroke-width="1.3" stroke-linecap="round" />
 
-  <!-- Point 3: Large Batch or Prefill -->
-  <circle cx="515" cy="115" r="7" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
-  <rect x="442" y="138" width="174" height="46" rx="6" fill="#eff6ff" stroke="#93c5fd" />
-  <text x="529" y="157" text-anchor="middle" class="label" fill="#1d4ed8">Prefill / 超大 Batch</text>
-  <text x="529" y="175" text-anchor="middle" class="tick" fill="#1e40af">已达算力上限，无空闲算力可借</text>
-  <line x1="515" y1="138" x2="515" y2="123" stroke="#2563eb" stroke-width="1.2" />
+  <!-- Point 3: Prefill / Large Batch on ceiling at (615, 196) -->
+  <circle cx="615" cy="196" r="7" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+  <rect x="520" y="234" width="196" height="54" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.3" />
+  <text x="618" y="257" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#1d4ed8">(3) Prefill / 超大 Batch</text>
+  <text x="618" y="277" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#1e3a8a">已达算力平台，无空闲算力</text>
+  <line x1="615" y1="234" x2="615" y2="205" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" />
 
-  <!-- Right Explanatory Panel -->
-  <rect x="652" y="70" width="280" height="300" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4" />
-  <text x="670" y="98" class="label" font-size="14" fill="#0f172a">关键工程结论</text>
-  <line x1="670" y1="110" x2="914" y2="110" stroke="#e2e8f0" stroke-width="1" />
+  <!-- Right Summary Panel -->
+  <rect x="774" y="120" width="294" height="400" rx="18" fill="#fffdf5" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="798" y="138" width="246" height="32" rx="10" fill="#fff3ce" />
+  <text x="921" y="159" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#805100">核心工程结论</text>
 
-  <text x="670" y="136" class="label" fill="#0f766e">1. 算子融合（减少 HBM 搬运字节数）</text>
-  <text x="670" y="156" class="body">减少中间张量的 HBM 读写字节数，</text>
-  <text x="670" y="174" class="body">在相同带宽斜线上直接缩短总耗时。</text>
+  <text x="800" y="206" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#0f766e">1. 算子融合（降低搬运字节）</text>
+  <text x="800" y="230" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">减少中间张量 HBM 读写次数，</text>
+  <text x="800" y="252" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">在相同带宽斜线上直接缩短耗时。</text>
 
-  <text x="670" y="210" class="label" fill="#b45309">2. CUDA Graphs（填补调度空泡）</text>
-  <text x="670" y="230" class="body">消除 Kernel 间 CPU 发射空隙，</text>
-  <text x="670" y="248" class="body">让实际带宽更贴近 3.35 TB/s 理论墙。</text>
+  <line x1="800" y1="274" x2="1042" y2="274" stroke="#ebe3d0" stroke-width="1" />
 
-  <text x="670" y="284" class="label" fill="#6d28d9">3. 投机解码（沿斜线向右攀升）</text>
-  <text x="670" y="304" class="body">小 Batch 下用闲置算力换多词输出；</text>
-  <text x="670" y="322" class="body">但若 Batch 过大进入蓝色算力平台区，</text>
-  <text x="670" y="340" class="body">验证额外 Token 会直接增加延迟。</text>
+  <text x="800" y="304" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#b45309">2. CUDA Graphs（填补空泡）</text>
+  <text x="800" y="328" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">消除 Kernel 间 CPU 发射延迟，</text>
+  <text x="800" y="350" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">使实际吞吐贴近硬件带宽上限。</text>
+
+  <line x1="800" y1="372" x2="1042" y2="372" stroke="#ebe3d0" stroke-width="1" />
+
+  <text x="800" y="402" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#6d28d9">3. 投机解码（小 Batch 有效）</text>
+  <text x="800" y="426" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">小 Batch 下用闲置算力多产词元；</text>
+  <text x="800" y="448" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">大 Batch 越过脊点进入蓝区后，</text>
+  <text x="800" y="470" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#4a453b">额外验证计算反而使延迟上升。</text>
 </svg>
