@@ -107,8 +107,8 @@ export const curriculum: Record<string, Chapter[]> = {
       slug: 'measurement',
       title: '测量与定位',
       summary: '用延迟、吞吐和 profiler 回答「现在慢在哪」。',
-      status: 'planned',
-      items: ['TTFT、TPOT 与端到端延迟', '请求吞吐与 token 吞吐', '并发度与输入输出长度对性能的影响', '压测工具与测试方法', 'Profiler 与时间线分析'],
+      status: 'published',
+      items: ['TTFT、TPOT、ITL 与端到端延迟', '吞吐、尾延迟与 Goodput', '并发度与输入输出长度的压测设计', '离线/在线接口差异与控制变量', 'nsys、PyTorch Profiler、ncu 与 CPU 采样', 'llama.cpp 慢推理定位与入门实测'],
     },
     {
       slug: 'cache-scheduling',
