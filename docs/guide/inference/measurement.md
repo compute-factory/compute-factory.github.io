@@ -57,9 +57,9 @@ $$\text{E2EL} = \text{TTFT} + (N_{\text{out}} - 1) \times \text{TPOT} \tag{1}$$
 评估系统单位时间的处理能力时，需要区分原始产出率与达标产出率：
 
 - **请求吞吐量（Request Throughput）**：单位时间内系统完成的总请求数（`req/s`），反映服务端对业务流量的总体消化速率。
-- **词元吞吐量（Token Throughput）**：分为仅计算生成结果的**输出词元吞吐量（Output Token Throughput）**和包含输入与输出之和的**总词元吞吐量（Total Token Throughput）**，单位均为 `tok/s`。
+- **词元吞吐量（Token Throughput）**：分为仅计算生成结果的**输出词元吞吐量**（Output Token Throughput）和包含输入与输出之和的**总词元吞吐量（Total Token Throughput）**，单位均为 `tok/s`。
 - **尾延迟（Tail Latency, P95 / P99）**：将所有样本耗时升序排列后第 95% 或第 99% 位置的值，反映最慢那批请求的真实等待体验。
-- **服务等级目标（Service Level Objective, SLO）**与**有效吞吐量（Goodput）**：由 [DistServe](https://arxiv.org/abs/2401.09670) 提出并在 `vllm bench serve` 中落地；Goodput 只统计在压测窗口内**同时满足全部预设延迟 SLO（如 TTFT ≤ 200 ms 且 TPOT ≤ 15 ms）的达标请求数除以总时长**。
+- **服务等级目标**（Service Level Objective, SLO）与**有效吞吐量（Goodput）**：由 [DistServe](https://arxiv.org/abs/2401.09670) 提出并在 `vllm bench serve` 中落地；Goodput 只统计在压测窗口内**同时满足全部预设延迟 SLO（如 TTFT ≤ 200 ms 且 TPOT ≤ 15 ms）的达标请求数除以总时长**。
 
 | 评估维度 | 常见误用指标 | 工程真实口径 | 并发 64 实测反差（512→128） |
 |---|---|---|---|

@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+  <defs>
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <marker id="arr-warm" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8c8270" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- 外圈暖象牙黄光晕底板 + 圆角白卡片 -->
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+
+  <!-- 顶部 Kicker 与主标题 -->
+  <text x="52" y="54" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">Lifecycle Intuition · Same Prompt Across Three Stages</text>
+  <text x="52" y="86" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">同一个问题在不同生命周期阶段的表现、数据与硬件落差</text>
+
+  <!-- 左栏：1. 预训练 -->
+  <rect x="52" y="114" width="314" height="464" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="68" y="130" width="282" height="32" rx="10" fill="#eff6ff" />
+  <text x="209" y="151" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">1. 预训练（Pre-training）</text>
+
+  <text x="209" y="184" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#222018">目标：读万卷书，学“顺着往下写”</text>
+
+  <rect x="72" y="200" width="274" height="72" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+  <text x="86" y="222" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">训练语料示例（无标注网页/教材）</text>
+  <text x="86" y="244" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#475569">输入："大语言模型运行在"</text>
+  <text x="86" y="262" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="700" fill="#1d4ed8">预测下一词 → "图形处理器"（算损失）</text>
+
+  <rect x="72" y="286" width="274" height="106" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3" />
+  <text x="86" y="310" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">产出基座模型（Base Model）实测表现</text>
+  <text x="86" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">问："请问什么是 GPU？"</text>
+  <text x="86" y="358" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="700" fill="#b91c1c">答："请问什么是 CPU？什么是内存？"</text>
+  <text x="86" y="380" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#64748b">（把提问当成了考试题库继续往下接龙）</text>
+
+  <rect x="72" y="408" width="274" height="150" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" />
+  <text x="86" y="432" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">工程开销与状态</text>
+  <text x="86" y="458" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 权重状态：从零初始化，全量持续改写</text>
+  <text x="86" y="484" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 数据规模：数万亿至数十万亿 Token</text>
+  <text x="86" y="510" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 硬件规模：数百至数万张 GPU</text>
+  <text x="86" y="536" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#1d4ed8">• 耗时周期：连续训练数周至数月</text>
+
+  <!-- 箭头 1 -> 2 -->
+  <path d="M 368 340 L 398 340" fill="none" stroke="#8c8270" stroke-width="2" stroke-linecap="round" marker-end="url(#arr-warm)" />
+
+  <!-- 中栏：2. 微调 / 后训练 -->
+  <rect x="403" y="114" width="314" height="464" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="419" y="130" width="282" height="32" rx="10" fill="#f8f5ff" />
+  <text x="560" y="151" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5b21b6">2. 微调 / 后训练（Post-training）</text>
+
+  <text x="560" y="184" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#222018">目标：教规矩，学会按人类偏好作答</text>
+
+  <rect x="423" y="200" width="274" height="72" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+  <text x="437" y="222" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">训练样本示例（指令问答 + 偏好排序）</text>
+  <text x="437" y="244" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#475569">SFT：&lt;|user|&gt;什么是GPU？&lt;|assistant|&gt;...</text>
+  <text x="437" y="262" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="700" fill="#5b21b6">对齐：奖励准确回答，抑制啰嗦与胡编</text>
+
+  <rect x="423" y="286" width="274" height="106" rx="12" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.3" />
+  <text x="437" y="310" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#4c1d95">产出对话模型（Instruct Model）表现</text>
+  <text x="437" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">问："请问什么是 GPU？"</text>
+  <text x="437" y="358" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="700" fill="#166534">答："GPU 是并行矩阵计算处理器..."</text>
+  <text x="437" y="380" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#64748b">（输出完整回答后自动输出 EOS 停机）</text>
+
+  <rect x="423" y="408" width="274" height="150" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" />
+  <text x="437" y="432" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">工程开销与状态</text>
+  <text x="437" y="458" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 权重状态：全量调整或仅训练 LoRA 插件</text>
+  <text x="437" y="484" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 数据规模：数万至数百万条高质量样本</text>
+  <text x="437" y="510" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 硬件规模：单机多卡至数十张 GPU</text>
+  <text x="437" y="536" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#5b21b6">• 耗时周期：数小时至数天</text>
+
+  <!-- 箭头 2 -> 3 -->
+  <path d="M 719 340 L 749 340" fill="none" stroke="#8c8270" stroke-width="2" stroke-linecap="round" marker-end="url(#arr-warm)" />
+
+  <!-- 右栏：3. 推理部署 -->
+  <rect x="754" y="114" width="314" height="464" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="770" y="130" width="282" height="32" rx="10" fill="#f0fdf4" />
+  <text x="911" y="151" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#166534">3. 推理服务（Inference）</text>
+
+  <text x="911" y="184" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#222018">目标：冻结参数上线，又快又省地服务并发</text>
+
+  <rect x="774" y="200" width="274" height="72" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+  <text x="788" y="222" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">在线请求执行过程（不学新知识、不改权重）</text>
+  <text x="788" y="244" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#475569">1. Prefill：并行处理提问，吐出第 1 个字</text>
+  <text x="788" y="262" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="700" fill="#0f766e">2. Decode：复用 KV Cache 逐字流式生成</text>
+
+  <rect x="774" y="286" width="274" height="106" rx="12" fill="#fff8dc" stroke="#e6c665" stroke-width="1.3" />
+  <text x="788" y="310" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#5c430d">多用户并发时的显存复用效果</text>
+  <text x="788" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">• 一份只读权重（如 14 GB）全体请求共享</text>
+  <text x="788" y="358" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#925b00">• 每个并发会话只单独分配 KV Cache</text>
+  <text x="788" y="380" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11" font-weight="400" fill="#64748b">（无需梯度与优化器，静态显存降为 1/8）</text>
+
+  <rect x="774" y="408" width="274" height="150" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" />
+  <text x="788" y="432" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#334155">工程开销与状态</text>
+  <text x="788" y="458" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 权重状态：彻底冻结只读，只走前向计算</text>
+  <text x="788" y="484" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 请求形态：实时到达的单条与并发流</text>
+  <text x="788" y="510" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#475569">• 硬件规模：单卡至多卡常驻在线服务</text>
+  <text x="788" y="536" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#166534">• 响应延迟：首字毫秒级，整句秒级完成</text>
+</svg>
