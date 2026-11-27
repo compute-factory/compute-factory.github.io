@@ -91,6 +91,19 @@ export const papers: Paper[] = [
     arxivId: '2611.04998v1',
     reportPdf: true,
   },
+  {
+    slug: 'zero',
+    title: 'ZeRO: Memory Optimizations Toward Training Trillion Parameter Models',
+    authors: ['Samyam Rajbhandari', 'Jeff Rasley', 'Olatunji Ruwase', 'Yuxiong He'],
+    venue: 'SC 2020',
+    firstPublished: '2019-10-04',
+    firstPublishedVia: 'arXiv',
+    categories: ['训练系统', '存储与通信'],
+    summary: '用分片替代复制，把数据并行的模型状态与残差状态显存按并行度线性压低。',
+    status: 'published',
+    arxivId: '1910.02054v3',
+    reportPdf: true,
+  },
 ]
 
 export function paperHref(slug: string): string {

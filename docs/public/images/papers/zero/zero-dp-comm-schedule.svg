@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+  <defs>
+    <!-- 1. 主卡片外圈漫反射柔光阴影 -->
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <!-- 2. 冗余状态低饱和斜线填充 -->
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <!-- 3. 圆润小箭头 -->
+    <marker id="arr-warm" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#8c8270" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#d97706" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- 必选外圈：暖象牙黄外框光晕底板 + 18px 留白白色大圆角主卡 -->
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+
+  <!-- 顶部：暖金等宽 Kicker (400) + 中文主标题 (700) -->
+  <text x="52" y="54" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">ZeRO-DP · Dynamic Communication Schedule &amp; Volume</text>
+  <text x="52" y="84" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">ZeRO-DP 动态通信调度与单卡通信量对比（以 4 卡数据并行为例）</text>
+
+  <!-- 顶部列标题胶囊 -->
+  <rect x="52" y="102" width="204" height="32" rx="10" fill="#f5f0e6" />
+  <text x="154" y="123" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#5c430d">并行阶段与单卡常驻显存</text>
+
+  <rect x="274" y="102" width="236" height="32" rx="10" fill="#f0fdfa" />
+  <text x="392" y="123" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">阶段 1：前向传播 (Forward)</text>
+
+  <rect x="538" y="102" width="268" height="32" rx="10" fill="#fff8dc" />
+  <text x="672" y="123" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#925b00">阶段 2：反向传播 (Backward)</text>
+
+  <rect x="834" y="102" width="234" height="32" rx="10" fill="#eff6ff" />
+  <text x="951" y="123" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">阶段 3：优化器步与总通信量</text>
+
+  <!-- ==================== ROW 1: 标准 DP ==================== -->
+  <rect x="52" y="146" width="1016" height="136" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+
+  <!-- Row 1 Left Tag -->
+  <rect x="68" y="162" width="188" height="104" rx="13" fill="url(#soft-hatch-red)" stroke="#fecaca" stroke-width="1.4" />
+  <text x="84" y="188" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#991b1b">标准数据并行 (DP)</text>
+  <text x="84" y="212" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#7f1d1d">每卡复制 100% P + G + OS</text>
+  <rect x="84" y="226" width="156" height="26" rx="8" fill="#ffffff" stroke="#fca5a5" stroke-width="1" />
+  <text x="162" y="244" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#991b1b">常驻显存：16Ψ 字节</text>
+
+  <!-- Row 1 Step 1 -->
+  <rect x="274" y="162" width="236" height="104" rx="13" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4" />
+  <text x="392" y="192" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#166534">读取本地全量参数算前向</text>
+  <text x="392" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#15803d">无需跨卡取参数</text>
+  <text x="392" y="244" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#0f766e">Comm = 0</text>
+
+  <!-- Arrow 1->2 -->
+  <path d="M 510 214 C 520 214, 526 214, 534 214" fill="none" stroke="#8c8270" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warm)" />
+
+  <!-- Row 1 Step 2 -->
+  <rect x="538" y="162" width="268" height="104" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="672" y="190" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5c430d">对全量梯度执行 All-Reduce</text>
+  <text x="672" y="214" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#78350f">Reduce-Scatter (Ψ) + All-Gather (Ψ)</text>
+  <text x="672" y="244" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#925b00">Comm = 2Ψ</text>
+
+  <!-- Arrow 2->3 -->
+  <path d="M 806 214 C 816 214, 822 214, 830 214" fill="none" stroke="#8c8270" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warm)" />
+
+  <!-- Row 1 Step 3 -->
+  <rect x="834" y="162" width="218" height="104" rx="13" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.4" />
+  <text x="943" y="190" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5b21b6">每卡重复更新 100% 权重</text>
+  <text x="943" y="214" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#6d28d9">步末无需参数同步 (Comm = 0)</text>
+  <text x="943" y="244" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#222018">单步总通信量：2Ψ (1.0x)</text>
+
+  <!-- ==================== ROW 2: ZeRO-DP (P_os+g) ==================== -->
+  <rect x="52" y="298" width="1016" height="136" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+
+  <!-- Row 2 Left Tag -->
+  <rect x="68" y="314" width="188" height="104" rx="13" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="84" y="340" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#1e3a8a">ZeRO-DP (P<tspan dy="3" font-size="10">os+g</tspan><tspan dy="-3" font-size="15">)</tspan></text>
+  <text x="84" y="364" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#1e40af">常驻：全量 P + 1/4 G 与 OS</text>
+  <rect x="84" y="378" width="156" height="26" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1" />
+  <text x="162" y="396" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#1e3a8a">显存：2Ψ + 14Ψ/N<tspan dy="3" font-size="9.5">d</tspan><tspan dy="-3" font-size="12.5"> (1/8)</tspan></text>
+
+  <!-- Row 2 Step 1 -->
+  <rect x="274" y="314" width="236" height="104" rx="13" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4" />
+  <text x="392" y="344" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#166534">读取本地全量参数算前向</text>
+  <text x="392" y="368" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#15803d">本地已存 2Ψ 参数副本</text>
+  <text x="392" y="396" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#0f766e">Comm = 0</text>
+
+  <!-- Arrow 1->2 -->
+  <path d="M 510 366 C 520 366, 526 366, 534 366" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-blue)" />
+
+  <!-- Row 2 Step 2 -->
+  <rect x="538" y="314" width="268" height="104" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="672" y="342" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5c430d">梯度就绪即 Reduce-Scatter</text>
+  <text x="672" y="366" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#78350f">只留本卡 1/4 平均梯度，其余即刻释放</text>
+  <text x="672" y="396" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#925b00">Comm = Ψ</text>
+
+  <!-- Arrow 2->3 -->
+  <path d="M 806 366 C 816 366, 822 366, 830 366" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-blue)" />
+
+  <!-- Row 2 Step 3 -->
+  <rect x="834" y="314" width="218" height="104" rx="13" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="943" y="342" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1e3a8a">更新 1/4 后参数 All-Gather</text>
+  <text x="943" y="366" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#1d4ed8">步末收集新 FP16 参数 (Comm = Ψ)</text>
+  <text x="943" y="396" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">单步总通信量：2Ψ (1.0x)</text>
+
+  <!-- ==================== ROW 3: ZeRO-DP (P_os+g+p) ==================== -->
+  <rect x="52" y="450" width="1016" height="136" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+
+  <!-- Row 3 Left Tag -->
+  <rect x="68" y="466" width="188" height="104" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="84" y="492" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#5c430d">ZeRO-DP (P<tspan dy="3" font-size="10">os+g+p</tspan><tspan dy="-3" font-size="15">)</tspan></text>
+  <text x="84" y="516" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#78350f">常驻：仅 1/4 P + G + OS</text>
+  <rect x="84" y="530" width="156" height="26" rx="8" fill="#ffffff" stroke="#e6c665" stroke-width="1" />
+  <text x="162" y="548" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#5c430d">显存：16Ψ/N<tspan dy="3" font-size="9.5">d</tspan><tspan dy="-3" font-size="12.5"> (1/N</tspan><tspan dy="3" font-size="9.5">d</tspan><tspan dy="-3" font-size="12.5">)</tspan></text>
+
+  <!-- Row 3 Step 1 -->
+  <rect x="274" y="466" width="236" height="104" rx="13" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="392" y="494" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#1e3a8a">按层广播 / All-Gather 参数</text>
+  <text x="392" y="518" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#1d4ed8">算完当前层即丢弃非本卡参数分片</text>
+  <text x="392" y="548" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#1e3a8a">Comm = Ψ</text>
+
+  <!-- Arrow 1->2 -->
+  <path d="M 510 518 C 520 518, 526 518, 534 518" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+
+  <!-- Row 3 Step 2 -->
+  <rect x="538" y="466" width="268" height="104" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="672" y="494" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5c430d">逆序取参数 + 梯度归约散射</text>
+  <text x="672" y="518" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#78350f">All-Gather P (Ψ) + Reduce-Scatter G (Ψ)</text>
+  <text x="672" y="548" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12.5" font-weight="700" fill="#925b00">Comm = 2Ψ</text>
+
+  <!-- Arrow 2->3 -->
+  <path d="M 806 518 C 816 518, 822 518, 830 518" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+
+  <!-- Row 3 Step 3 -->
+  <rect x="834" y="466" width="218" height="104" rx="13" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4" />
+  <text x="943" y="494" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#166534">仅更新本卡 1/4 参数分片</text>
+  <text x="943" y="518" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#15803d">取消步末参数 All-Gather (Comm = 0)</text>
+  <text x="943" y="548" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#5c430d">单步总通信量：3Ψ (1.5x)</text>
+</svg>
