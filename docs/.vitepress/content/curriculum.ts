@@ -237,10 +237,10 @@ export const curriculum: Record<string, Chapter[]> = {
   'distributed-parallel': [
     {
       slug: 'parallelism-overview',
-      title: '并行全景与切分选型',
-      summary: '先建立全局地图：为什么要并行、有哪些并行、训和推为什么切法不同。',
-      status: 'planned',
-      items: ['单卡瓶颈的两种形态：算力墙与显存墙', '并行的五个基本维度：DP、TP、PP、CP/SP 与 EP', '训练与推理在并行上的差异：吞吐与优化器状态 vs 延迟与 KV Cache', '硬件互联与切分决策：NVLink、PCIe 与跨机网络的边界', '典型模型规模与卡数下的显存及并行策略估算'],
+      title: '分布式并行概览',
+      summary: '先建立全局地图：为什么需要分布式并行、常见有哪些并行技术、训练与推理为什么诉求不同。',
+      status: 'published',
+      items: ['算力墙与显存墙：单卡为什么跑不动 70B', '五维并行全景：DP、TP、PP、CP/SP 与 EP', '多维并行的正交组合与通信底座', '训练与推理的并行诉求差异'],
     },
     {
       slug: 'communication-topology',
