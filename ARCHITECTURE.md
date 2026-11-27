@@ -29,7 +29,7 @@
 | --- | --- |
 | docs/.vitepress/config.mts | VitePress 配置、本页目录位置与层级、搜索与页面元信息 |
 | docs/.vitepress/content/site.ts | 顶部导航、首页板块文案、仓库地址 |
-| docs/.vitepress/content/learning.ts | 五个板块的 id 和标题 |
+| docs/.vitepress/content/learning.ts | 六个板块的 id 和标题 |
 | docs/.vitepress/content/curriculum.ts | 章节的 slug、标题、简介、状态与计划小节，修改课程规划优先编辑这里 |
 | docs/.vitepress/content/papers.ts | 论文元数据、固定分类和精读文件路径 |
 | docs/.vitepress/theme/index.ts | 主题注册与全局 CSS 入口 |
@@ -61,7 +61,7 @@
 
 ## 数据和样式约定
 
-板块横条和知识图使用同一份 learningTopics。读者页面只呈现思维导图上有的标题（方向、模块、知识点），不放简介、延伸资料和“在 GitHub 上编辑”之类入口。地图是从左到右的三级思维导图：五个一级方向 → 二级模块 → 三级知识点。二级模块和三级知识点从 curriculum.ts 读取并默认全部显示，不折叠。三级文字表达课程规划，
+板块横条和知识图使用同一份 learningTopics。读者页面只呈现思维导图上有的标题（方向、模块、知识点），不放简介、延伸资料和“在 GitHub 上编辑”之类入口。地图是从左到右的三级思维导图：六个一级方向 → 二级模块 → 三级知识点。二级模块和三级知识点从 curriculum.ts 读取并默认全部显示，不折叠。三级文字表达课程规划，
 
 修改知识图时，找到 curriculum 中与 learning.ts 的 id 相同的键。调整数组顺序可调整学习顺序和上一篇/下一篇的顺序，修改 title 可改二级标题，修改 items 可增删三级知识点。新增一级方向时，同时增加 learningTopics 和 curriculum 的对应条目，并补一个 `docs/guide/{方向}/index.md` 板块页。同一分支内的模块标题应唯一。
 
