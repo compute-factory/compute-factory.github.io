@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+  <defs>
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#b45309" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- 外圈暖黄光晕底板 + 白色大圆角主卡 -->
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+
+  <!-- 顶部标题 -->
+  <text x="52" y="54" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">Single-GPU Bottlenecks · 70B Dense Model Case</text>
+  <text x="52" y="86" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">单卡瓶颈的两种形态：算力墙与显存墙（以 70B 稠密模型为例）</text>
+
+  <!-- 左栏：算力墙 -->
+  <rect x="52" y="114" width="466" height="450" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="76" y="134" width="418" height="34" rx="10" fill="#fff8dc" />
+  <text x="285" y="156" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#925b00">1. 算力墙（Compute Wall）：训练周期不可接受</text>
+
+  <rect x="82" y="188" width="406" height="68" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="285" y="216" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5c430d">70B 参数 · 1T Token 预训练总计算量</text>
+  <text x="285" y="240" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#785510">C ≈ 6 × P × D = 4.2 × 10²³ FLOPs</text>
+
+  <path d="M 285 256 L 285 292" fill="none" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+
+  <rect x="82" y="298" width="406" height="68" rx="13" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <text x="285" y="326" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#222018">单卡持续算力假设（50% MFU）</text>
+  <text x="285" y="350" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#57534e">1000 TFLOP/s × 50% = 5.0 × 10¹⁴ FLOP/s</text>
+
+  <path d="M 285 366 L 285 402" fill="none" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+
+  <rect x="82" y="408" width="406" height="74" rx="13" fill="url(#soft-hatch-red)" stroke="#fca5a5" stroke-width="1.4" />
+  <text x="285" y="438" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#991b1b">单卡耗时 ≈ 26.6 年（无法迭代）</text>
+  <text x="285" y="463" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#7f1d1d">必须靠多卡横向扩展把时间压到周级</text>
+
+  <rect x="82" y="500" width="406" height="44" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" />
+  <text x="285" y="527" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#334155">1024 卡同效率并行 → 约 9.5 天完成训练</text>
+
+  <!-- 右栏：显存墙 -->
+  <rect x="542" y="114" width="526" height="450" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="566" y="134" width="478" height="34" rx="10" fill="#eff6ff" />
+  <text x="805" y="156" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#1d4ed8">2. 显存墙（Memory Wall）：单卡 80 GB 根本装不下</text>
+
+  <!-- 单卡容量参考线 -->
+  <text x="576" y="196" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">单卡显存上限</text>
+  <rect x="576" y="206" width="32" height="28" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4" />
+  <text x="618" y="225" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" fill="#0f766e">80 GB（基准线）</text>
+
+  <!-- 分段虚线标尺 x = 608 对应 80 GB（避开所有文字标题行） -->
+  <line x1="608" y1="204" x2="608" y2="238" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="4 3" />
+  <line x1="608" y1="274" x2="608" y2="314" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="4 3" />
+  <line x1="608" y1="354" x2="608" y2="398" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="4 3" />
+
+  <!-- 70B 推理条：权重 140 GB (56px) + KV Cache 86 GB (34px) = 226 GB (90px) -->
+  <text x="576" y="266" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">70B BF16 推理（batch=32, seq=8192）</text>
+  <rect x="576" y="276" width="56" height="34" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <rect x="634" y="276" width="36" height="34" rx="6" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.4" />
+  <text x="682" y="298" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="400" fill="#1e3a8a">权重 140 GB + KV Cache 86 GB ≈ 226 GB（超 2.8×）</text>
+
+  <!-- 70B 训练静态条：权重 140 GB (56px) + 梯度 140 GB (56px) + 优化器 840 GB (336px) = 448px -->
+  <text x="576" y="346" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#991b1b">70B BF16 混合精度训练（AdamW 仅静态状态，不含激活）</text>
+  <rect x="576" y="356" width="56" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="604" y="380" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="700" fill="#1e3a8a">140</text>
+  <rect x="634" y="356" width="56" height="38" rx="6" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="662" y="380" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="11" font-weight="700" fill="#785510">140</text>
+  <rect x="692" y="356" width="336" height="38" rx="6" fill="url(#soft-hatch-red)" stroke="#fca5a5" stroke-width="1.4" />
+  <text x="860" y="380" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#991b1b">FP32 主权重 + m + v：840 GB（12B/参数）</text>
+
+  <text x="576" y="418" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#991b1b">静态合计 1,120 GB（16B/参数，超出单卡 14×），尚未计入激活值</text>
+
+  <!-- 图例 -->
+  <rect x="576" y="440" width="14" height="14" rx="3" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+  <text x="596" y="452" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">BF16 权重</text>
+  <rect x="676" y="440" width="14" height="14" rx="3" fill="#fff8dc" stroke="#e6c665" stroke-width="1" />
+  <text x="696" y="452" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">BF16 梯度</text>
+  <rect x="776" y="440" width="14" height="14" rx="3" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1" />
+  <text x="796" y="452" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">KV Cache</text>
+  <rect x="876" y="440" width="14" height="14" rx="3" fill="url(#soft-hatch-red)" stroke="#fca5a5" stroke-width="1" />
+  <text x="896" y="452" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#334155">AdamW 状态</text>
+
+  <rect x="576" y="500" width="468" height="44" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2" />
+  <text x="810" y="527" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">推论：先切分解决显存装不下，再靠多卡并行缩短计算耗时</text>
+</svg>

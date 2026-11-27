@@ -239,7 +239,7 @@ export const curriculum: Record<string, Chapter[]> = {
       slug: 'parallelism-overview',
       title: '分布式并行概览',
       summary: '先建立全局地图：为什么需要分布式并行、常见有哪些并行技术、训练与推理为什么诉求不同。',
-      status: 'planned',
+      status: 'published',
       items: ['为什么需要分布式并行：算力墙与显存墙', '常见的分布式并行技术：DP、TP、PP、CP 与 EP', '多维并行的正交组合与通信底座', '训练与推理的并行诉求差异'],
     },
     {
