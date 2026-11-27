@@ -18,9 +18,9 @@ export const curriculum: Record<string, Chapter[]> = {
     {
       slug: 'llm-overview',
       title: '大模型概览',
-      summary: '它是什么、能做什么，Token 怎么切分，以及预训练、微调、推理三件事的边界。',
+      summary: '它是什么、能做什么，Token 怎么切分，架构与精度如何影响显存，以及预训练、微调、推理三件事的边界。',
       status: 'published',
-      items: ['大语言模型的定义与能力边界', 'Token 与 Tokenizer：文本切分与多语言编码差异', '预训练、微调与推理的边界', '文本模型与多模态模型的差异'],
+      items: ['大语言模型的定义与能力边界', 'Token 与 Tokenizer：文本切分与多语言编码差异', '模型架构与数值精度', '预训练、微调与推理的边界', '文本模型与多模态模型的差异'],
     },
     {
       slug: 'ai-infra-overview',
