@@ -13,7 +13,7 @@ const streams = ['01A3F0', '10C01E', 'F170B0', '018A01', '410D01', '1F00C0', '01
         <p class="hero-brand" lang="en">Compute Factory</p>
         <h1 id="home-title">算力<span>工地</span></h1>
         <p class="hero-lead">面向初学者的 AI Infra 教学站</p>
-        <p class="hero-description">沿着学习地图，从大模型基础走到推理、GPU 算子和分布式训练。每篇围绕一个能动手验证的问题展开。</p>
+        <p class="hero-description">沿着学习地图，从大模型基础走到推理、GPU 算子、训练优化和分布式并行。每篇围绕一个能动手验证的问题展开。</p>
         <a class="cf-button hero-action" :href="withBase('/guide/')"><BookOpen :size="19" aria-hidden="true" />开始学习</a>
       </div>
 

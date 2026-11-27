@@ -9,5 +9,6 @@ export const learningTopics: LearningTopic[] = [
   { id: 'programming', title: '编程前置' },
   { id: 'inference', title: '推理与服务' },
   { id: 'gpu-kernels', title: 'GPU 与算子' },
-  { id: 'distributed-training', title: '分布式训练' },
+  { id: 'training', title: '训练与优化' },
+  { id: 'distributed-parallel', title: '分布式并行' },
 ]

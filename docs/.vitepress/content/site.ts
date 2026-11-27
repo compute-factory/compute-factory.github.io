@@ -15,7 +15,7 @@ export const homeFeatures = [
   {
     id: 'tutorials',
     title: '主题教程',
-    description: '按入门导读、编程前置、推理与服务、GPU 与算子、分布式训练组织教程，配合学习路线和动手实验逐步掌握 AI Infra。',
+    description: '按入门导读、编程前置、推理与服务、GPU 与算子、训练与优化、分布式并行组织教程，配合学习路线和动手实验逐步掌握 AI Infra。',
     link: { text: '进入主题教程', href: '/guide/' },
   },
   {

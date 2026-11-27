@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Compass, Cpu, Gauge, Network, SquareTerminal } from '@lucide/vue'
+import { BookOpen, Compass, Cpu, Dumbbell, Gauge, Network, SquareTerminal } from '@lucide/vue'
 import type { Component } from 'vue'
 
 defineProps<{ topicId: string }>()
@@ -8,7 +8,8 @@ const icons: Record<string, Component> = {
   programming: SquareTerminal,
   inference: Gauge,
   'gpu-kernels': Cpu,
-  'distributed-training': Network,
+  training: Dumbbell,
+  'distributed-parallel': Network,
 }
 </script>
 
