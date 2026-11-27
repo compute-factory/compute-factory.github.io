@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+  <defs>
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <marker id="arr-teal" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+
+  <text x="52" y="54" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">Interconnect Hierarchy · Parallelism Placement Rule</text>
+  <text x="52" y="86" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">硬件互联带宽阶梯与并行切分的「由内而外」映射原则</text>
+
+  <!-- 左栏：机内 NVLink -->
+  <rect x="52" y="114" width="318" height="360" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="70" y="132" width="282" height="34" rx="10" fill="#fff8dc" />
+  <text x="211" y="154" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#925b00">层级 1：机内 NVLink / NVSwitch</text>
+
+  <rect x="76" y="186" width="270" height="54" rx="12" fill="#fff8dc" stroke="#e6c665" stroke-width="1.3" />
+  <text x="211" y="209" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" fill="#5c430d">双向带宽 600 ~ 900 GB/s</text>
+  <text x="211" y="229" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#785510">亚微秒级点对点延迟 · 单机通常 8 卡域</text>
+
+  <rect x="76" y="260" width="270" height="106" rx="12" fill="#ffffff" stroke="#d9d0bd" stroke-width="1.2" />
+  <text x="211" y="286" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#222018">优先放置：TP / SP（与机内 EP）</text>
+  <text x="92" y="312" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 每层前后各同步 1 次（无法掩盖）</text>
+  <text x="92" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 典型取值 TP ≤ 8（严禁跨机拆分）</text>
+  <text x="92" y="356" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 推理低延迟也首选机内 TP</text>
+
+  <rect x="76" y="386" width="270" height="66" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.2" />
+  <text x="211" y="413" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">最内层轴：最快互联给最频繁通信</text>
+  <text x="211" y="435" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12" font-weight="400" fill="#0f766e">TP size ≤ GPUs per NVLink domain</text>
+
+  <!-- 中栏：节点内 PCIe -->
+  <rect x="401" y="114" width="318" height="360" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="419" y="132" width="282" height="34" rx="10" fill="#f8f5ff" />
+  <text x="560" y="154" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#6d28d9">层级 2：机内 PCIe 总线（无 NVLink）</text>
+
+  <rect x="425" y="186" width="270" height="54" rx="12" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.3" />
+  <text x="560" y="209" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" fill="#5b21b6">Gen4/Gen5 单向 32 ~ 64 GB/s</text>
+  <text x="560" y="229" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#6d28d9">比同代 NVLink 低一个数量级且经 Root Complex</text>
+
+  <rect x="425" y="260" width="270" height="106" rx="12" fill="#ffffff" stroke="#d9d0bd" stroke-width="1.2" />
+  <text x="560" y="286" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#222018">谨慎配置：用 PP / DP 替代大 TP</text>
+  <text x="441" y="312" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 无 P2P 直通时 TP=4/8 通信占比剧增</text>
+  <text x="441" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 推理若显存够优先 DP 副本或 PP</text>
+  <text x="441" y="356" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• 训练通过梯度累积降低同步频次</text>
+
+  <rect x="425" y="386" width="270" height="66" rx="12" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2" />
+  <text x="560" y="413" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#991b1b">工程红线：PCIe 上慎用大 TP</text>
+  <text x="560" y="435" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#7f1d1d">先测 nccl-tests busbw 再定 TP 上限</text>
+
+  <!-- 右栏：跨机 InfiniBand / RoCE -->
+  <rect x="750" y="114" width="318" height="360" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="768" y="132" width="282" height="34" rx="10" fill="#eff6ff" />
+  <text x="909" y="154" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#1d4ed8">层级 3：跨机网络（IB / RoCE）</text>
+
+  <rect x="774" y="186" width="270" height="54" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3" />
+  <text x="909" y="209" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" fill="#1e3a8a">单网卡 200 ~ 400 Gb/s（25 ~ 50 GB/s）</text>
+  <text x="909" y="229" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#1e3a8a">多网卡聚合可达数百 GB/s，但延迟高</text>
+
+  <rect x="774" y="260" width="270" height="106" rx="12" fill="#ffffff" stroke="#d9d0bd" stroke-width="1.2" />
+  <text x="909" y="286" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#222018">跨机放置：PP、DP / FSDP 与 CP</text>
+  <text x="790" y="312" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• PP：只传层间边界激活，带宽需求极低</text>
+  <text x="790" y="334" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• DP / FSDP：通信可与计算异步重叠</text>
+  <text x="790" y="356" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#44403c">• CP：大块长序列下计算足以掩盖 KV 传输</text>
+
+  <rect x="774" y="386" width="270" height="66" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2" />
+  <text x="909" y="413" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1d4ed8">最外层轴：以低频或重叠掩盖延迟</text>
+  <text x="909" y="435" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="12" font-weight="400" fill="#1e3a8a">PP stage boundaries · DP/FSDP ring</text>
+
+  <!-- 底部映射流程条 -->
+  <rect x="52" y="494" width="1016" height="86" rx="16" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <text x="76" y="522" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#222018">典型多维排布顺序（由内到外：本地 Rank 连续绑定最高带宽域）：</text>
+
+  <rect x="76" y="534" width="190" height="32" rx="9" fill="#fff8dc" stroke="#e6c665" stroke-width="1.3" />
+  <text x="171" y="555" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#5c430d">1. TP（最内层机内）</text>
+
+  <path d="M 270 550 L 306 550" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+
+  <rect x="312" y="534" width="190" height="32" rx="9" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.3" />
+  <text x="407" y="555" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">2. CP（长序列扩域）</text>
+
+  <path d="M 506 550 L 542 550" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+
+  <rect x="548" y="534" width="220" height="32" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1.3" />
+  <text x="658" y="555" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#0f766e">3. PP（跨节点切模型深度）</text>
+
+  <path d="M 772 550 L 808 550" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-blue)" />
+
+  <rect x="814" y="534" width="230" height="32" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3" />
+  <text x="929" y="555" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">4. DP / FSDP（最外层扩吞吐）</text>
+</svg>
