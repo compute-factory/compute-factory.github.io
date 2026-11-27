@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620">
+  <defs>
+    <!-- 1. 主卡片外圈漫反射柔光阴影 -->
+    <filter id="soft-shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#222018" flood-opacity="0.05" />
+    </filter>
+    <!-- 2. 冗余/失败状态低饱和斜线填充 -->
+    <pattern id="soft-hatch-red" width="10" height="10" patternTransform="rotate(38)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#fef2f2" />
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#fecaca" stroke-width="2.2" />
+    </pattern>
+    <!-- 3. 圆润小箭头 -->
+    <marker id="arr-teal" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#0d9488" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 2 2.5 L 9.5 6 L 2 9.5" fill="none" stroke="#d97706" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- 必选外圈：暖象牙黄外框光晕底板 + 18px 留白白色大圆角主卡 -->
+  <rect width="1120" height="620" fill="#fffdf7" />
+  <rect x="18" y="18" width="1084" height="584" rx="22" fill="#ffffff" stroke="#ebe3d0" stroke-width="1.5" filter="url(#soft-shadow)" />
+
+  <!-- 顶部：暖金等宽 Kicker (400) + 中文主标题 (700) -->
+  <text x="52" y="54" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="400" fill="#925b00" letter-spacing="0.3">ZeRO-R · Residual State Memory Optimizations</text>
+  <text x="52" y="84" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#222018" letter-spacing="-0.3">ZeRO-R 残差状态控制机制：激活切分、定长融合缓冲与在线碎片整理</text>
+
+  <!-- ==================== 左栏阶段容器：分区激活检查点 P_a & P_a+cpu ==================== -->
+  <rect x="52" y="110" width="496" height="362" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="74" y="128" width="452" height="34" rx="10" fill="#eff6ff" />
+  <text x="300" y="150" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#1d4ed8">机制 1：分区激活检查点 P<tspan dy="3" font-size="10.5">a</tspan><tspan dy="-3" font-size="15"> 与卸载 P</tspan><tspan dy="3" font-size="10.5">a+cpu</tspan><tspan dy="-3" font-size="15">（跨 MP 卡切分）</tspan></text>
+
+  <!-- 基线 MP 卡片 -->
+  <rect x="74" y="178" width="452" height="118" rx="13" fill="url(#soft-hatch-red)" stroke="#fecaca" stroke-width="1.4" />
+  <text x="92" y="204" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13.5" font-weight="700" fill="#991b1b">基线模型并行 (MP)：每张 MP 卡重复保存 100% 激活检查点</text>
+  <text x="92" y="226" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#7f1d1d">100B 模型 (batch=32, seq=1024, N<tspan dy="3" font-size="9.5">m</tspan><tspan dy="-3" font-size="12">=16)：单卡激活检查点高达 33 GB</tspan></text>
+  <rect x="92" y="242" width="124" height="36" rx="9" fill="#ffffff" stroke="#fca5a5" stroke-width="1.2" />
+  <text x="154" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#991b1b">MP 卡 0：完整 X</text>
+  <rect x="230" y="242" width="124" height="36" rx="9" fill="#ffffff" stroke="#fca5a5" stroke-width="1.2" />
+  <text x="292" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#991b1b">MP 卡 1：完整 X</text>
+  <text x="369" y="265" text-anchor="middle" font-family="JetBrains Mono, Cascadia Code, SFMono-Regular, Consolas, monospace" font-size="13" font-weight="700" fill="#991b1b">...</text>
+  <rect x="384" y="242" width="124" height="36" rx="9" fill="#ffffff" stroke="#fca5a5" stroke-width="1.2" />
+  <text x="446" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#991b1b">MP 卡 15：完整 X</text>
+
+  <!-- ZeRO-R P_a 卡片 -->
+  <rect x="74" y="312" width="452" height="142" rx="13" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4" />
+  <text x="92" y="338" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">ZeRO-R P<tspan dy="3" font-size="10">a</tspan><tspan dy="-3" font-size="13">：按 N</tspan><tspan dy="3" font-size="10">m</tspan><tspan dy="-3" font-size="13"> 切分（33 GB 降至 2 GB/卡），反向前按需收集</tspan></text>
+  <rect x="92" y="354" width="104" height="36" rx="9" fill="#ffffff" stroke="#60a5fa" stroke-width="1.2" />
+  <text x="144" y="377" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#1e40af">卡 0：分片 X<tspan dy="3" font-size="9.5">0</tspan></text>
+  <rect x="206" y="354" width="104" height="36" rx="9" fill="#ffffff" stroke="#60a5fa" stroke-width="1.2" />
+  <text x="258" y="377" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#1e40af">卡 1：分片 X<tspan dy="3" font-size="9.5">1</tspan></text>
+  <path d="M 316 372 C 326 372, 332 372, 342 372" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-teal)" />
+  <rect x="348" y="354" width="160" height="36" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1.2" />
+  <text x="428" y="377" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#166534">重算前 All-Gather 还原</text>
+  <text x="92" y="416" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#1e40af">• 额外通信仅占 MP 原通信量的 1/12 (8.3% &lt; 10%)，算术强度 ≥ 10K 掩盖开销</text>
+  <text x="92" y="438" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#1e40af">• P<tspan dy="3" font-size="9.5">a+cpu</tspan><tspan dy="-3" font-size="12"> 可将 2 GB 分片进一步卸载至 CPU，使 GPU 激活检查点显存归零</tspan></text>
+
+  <!-- ==================== 右栏阶段容器：在线显存碎片整理 M_D ==================== -->
+  <rect x="572" y="110" width="496" height="362" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="594" y="128" width="452" height="34" rx="10" fill="#fff8dc" />
+  <text x="820" y="150" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700" fill="#925b00">机制 2：在线显存碎片整理 M<tspan dy="3" font-size="10.5">D</tspan><tspan dy="-3" font-size="15">（隔离长短生命周期张量）</tspan></text>
+
+  <!-- 未整理碎片堆 -->
+  <rect x="594" y="178" width="452" height="118" rx="13" fill="url(#soft-hatch-red)" stroke="#fecaca" stroke-width="1.4" />
+  <text x="612" y="204" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13.5" font-weight="700" fill="#991b1b">未整理显存堆：长/短寿命张量交错，剩余 &gt;30% 空闲仍触发 OOM</text>
+  <text x="612" y="226" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#7f1d1d">短寿命重算激活释放后留下离散空洞，无法满足大张量连续显存申请</text>
+  <rect x="612" y="242" width="68" height="36" rx="8" fill="#fff8dc" stroke="#e6c665" stroke-width="1.2" />
+  <text x="646" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#5c430d">检查点</text>
+  <rect x="686" y="242" width="62" height="36" rx="8" fill="#ffffff" stroke="#d9d0bd" stroke-width="1.2" stroke-dasharray="4,2" />
+  <text x="717" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#8c8270">空闲洞</text>
+  <rect x="754" y="242" width="76" height="36" rx="8" fill="#fff8dc" stroke="#e6c665" stroke-width="1.2" />
+  <text x="792" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#5c430d">参数梯度</text>
+  <rect x="836" y="242" width="62" height="36" rx="8" fill="#ffffff" stroke="#d9d0bd" stroke-width="1.2" stroke-dasharray="4,2" />
+  <text x="867" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="11.5" font-weight="400" fill="#8c8270">空闲洞</text>
+  <rect x="904" y="242" width="124" height="36" rx="8" fill="#ffffff" stroke="#ef4444" stroke-width="1.4" />
+  <text x="966" y="265" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="700" fill="#991b1b">大块申请失败!</text>
+
+  <!-- ZeRO-R M_D 整理后 -->
+  <rect x="594" y="312" width="452" height="142" rx="13" fill="#fff8dc" stroke="#e6c665" stroke-width="1.4" />
+  <text x="612" y="338" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#5c430d">ZeRO-R M<tspan dy="3" font-size="10">D</tspan><tspan dy="-3" font-size="13">：长寿命张量拷入预分配连续池，右侧留出整块空间</tspan></text>
+  <rect x="612" y="354" width="190" height="36" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.2" />
+  <text x="707" y="377" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#5c430d">预分配连续池 (检查点+梯度)</text>
+  <path d="M 808 372 C 818 372, 824 372, 834 372" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)" />
+  <rect x="840" y="354" width="188" height="36" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1.2" />
+  <text x="934" y="377" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="700" fill="#166534">大块连续自由显存 (直接分配)</text>
+  <text x="612" y="416" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#5c430d">• 彻底消除碎片引发的未满 OOM，允许在同等物理显存下运行更大微批量</text>
+  <text x="612" y="438" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#5c430d">• 省去动态内存分配器在碎片堆中搜索可用连续块的 CPU/GPU 调度耗时</text>
+
+  <!-- ==================== 底部横栏：机制 3 恒定大小融合缓冲区 C_B ==================== -->
+  <rect x="52" y="486" width="1016" height="92" rx="18" fill="#fffefb" stroke="#d9d0bd" stroke-width="1.4" />
+  <rect x="74" y="504" width="268" height="56" rx="12" fill="#f8f5ff" stroke="#c4b5fd" stroke-width="1.4" />
+  <text x="208" y="528" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700" fill="#5b21b6">机制 3：恒定大小缓冲区 C<tspan dy="3" font-size="10">B</tspan></text>
+  <text x="208" y="548" text-anchor="middle" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12" font-weight="400" fill="#6d28d9">切断临时缓冲区与参数量 Ψ 的线性绑定</text>
+
+  <text x="358" y="526" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#222018">• <tspan font-weight="700" fill="#991b1b">传统全量拍平缓冲</tspan>：融合缓冲区正比于 Ψ（3B 模型 32 位融合缓冲独占 12 GB 显存），随模型放大迅速撑爆设备</text>
+  <text x="358" y="552" font-family="Inter, HarmonyOS Sans SC, PingFang SC, Noto Sans SC, Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="12.5" font-weight="400" fill="#222018">• <tspan font-weight="700" fill="#0f766e">ZeRO-R 定长分批融合 (C</tspan><tspan dy="3" font-size="9.5" font-weight="700" fill="#0f766e">B</tspan><tspan dy="-3" font-size="12.5" font-weight="700" fill="#0f766e">)</tspan>：锁定为与 Ψ 无关的高效常数容量，分批流式触发通信与范数计算，兼顾高带宽与低显存</text>
+</svg>
