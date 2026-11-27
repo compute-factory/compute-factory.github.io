@@ -14,6 +14,7 @@
 
 做任务前先看一眼索引：如果任务正好是某个技能的用途，就先读该技能目录下的 `SKILL.md`，按它的流程走，而不是临场发挥。目前有：
 
+- `skills/ai-infra-tutorial/SKILL.md` —— 撰写面向工程师与学习者的中文 AI Infra 与系统技术教学文章。遇到「写教程」「章节编写」「原理拆解」「架构概览」「动手实验」时先读它。
 - `skills/paper-reading-report/SKILL.md` —— 把论文、聊天记录与笔记整理成可发布的中文读后报告。遇到「论文精读」「读后报告」「把这篇论文写成文章」，或收到论文 PDF / arXiv 链接时先读它。
 
 新增技能照 `skills/README.md` 的步骤做，`scripts/check-skills.mjs` 会校验目录名、frontmatter 与文件引用。
