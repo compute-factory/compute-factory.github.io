@@ -6,11 +6,12 @@
 
 | 技能 | 版本 | 用途 | 什么时候用 |
 |---|---|---|---|
+| [ai-infra-tutorial](ai-infra-tutorial/SKILL.md) | 1.1.0 | 撰写面向工程师与学习者的中文 AI Infra 与系统技术教学文章 | 用户要求编写概念讲解、原理拆解、架构概览、动手实验教程或专题指南时 |
 | [paper-reading-report](paper-reading-report/SKILL.md) | 1.8.0 | 把论文、聊天记录与笔记整理成可直接发布的中文论文读后报告 | 用户说「论文精读」「读后报告」「把这篇论文写成文章」，或提供论文 PDF / arXiv 链接并附带笔记时 |
 
 ## 怎么用
 
-- **Claude Code 等支持 skills 的工具**：把整个目录复制到项目的 `.claude/skills/`，或从 `AGENTS.md` 的「技能」一节找到入口文件手工读取。
+- **Claude Code / Antigravity / Codex 等支持 skills 的工具**：把对应技能目录复制到项目的 `.claude/skills/`、`.agents/skills/` 或全局技能目录，或从 `AGENTS.md` 的「技能」一节找到入口文件手工读取。
 - **其他 agent**：直接读 `skills/<name>/SKILL.md`，它引用的 `references/`、`scripts/`、`assets/` 都在同目录下。
 
 ## 新增一个技能
